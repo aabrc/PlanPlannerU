@@ -4,6 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#f3eddf">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./assets/icon.svg" type="image/svg+xml">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="PlanPlannerU">
 <title>PlanPlannerU · Plan ITT-2020</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -294,6 +298,16 @@ footer{text-align:center;color:#89928b;font-size:10px;padding:24px 8px 0;line-he
   <div class="dialog-actions"><button id="deleteEventBtn" type="button" class="plain-btn danger" style="display:none" onclick="deleteCurrentEvent()"><i class="fa-solid fa-trash"></i> Eliminar</button><div class="dialog-actions-right"><button type="button" class="plain-btn" onclick="closeScheduleDialog()">Cancelar</button><button type="submit" class="plain-btn primary">Guardar horario</button></div></div>
  </form>
 </dialog>
+<dialog id="cloudAccountDialog" class="account-dialog">
+ <div class="dialog-head"><h2>Tu cuenta PlanPlannerU</h2><p>Guarda tu progreso y sincronízalo entre dispositivos.</p></div>
+ <div class="account-body">
+  <p class="account-help">Escribe tu correo. Te enviaremos un código de verificación de un solo uso. No necesitas crear ni recordar una contraseña.</p>
+  <label for="cloudEmail">Correo electrónico</label><input id="cloudEmail" type="email" autocomplete="email" placeholder="tu@email.com">
+  <div id="cloudOtpWrap" hidden><label for="cloudOtp">Código de verificación</label><input id="cloudOtp" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="Código recibido por correo"></div>
+  <p id="cloudAccountMessage" class="account-help" aria-live="polite"></p>
+  <div class="account-actions"><button id="cloudSendCode" class="plain-btn primary" type="button" onclick="cloudSendCode()">Enviar código</button><button id="cloudVerifyCode" class="plain-btn green" type="button" hidden onclick="cloudVerifyCode()">Verificar e iniciar sesión</button><button id="cloudSignOut" class="plain-btn danger" type="button" hidden onclick="cloudSignOut()">Cerrar sesión</button><button class="plain-btn" type="button" onclick="document.getElementById('cloudAccountDialog').close()">Cerrar</button></div>
+ </div>
+</dialog>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -374,7 +388,7 @@ function loadState(){
 }
 let state=loadState();
 let openPeriods=new Set([state.meta.currentPeriod||PLAN.periods[0].id]);
-function persist(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state));return true;}catch(e){console.warn('No se pudo guardar localmente',e);toast('El navegador no permitió guardar automáticamente. Exporta un respaldo para conservar tus cambios.');return false;}}
+function persist(){try{state._syncUpdatedAt=Date.now();localStorage.setItem(STORAGE_KEY,JSON.stringify(state));window.PlanPlannerUCloud?.scheduleSync();return true;}catch(e){console.warn('No se pudo guardar localmente',e);toast('El navegador no permitió guardar automáticamente. Exporta un respaldo para conservar tus cambios.');return false;}}
 function esc(v){return String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
 function courseState(code){return state.courseStates[code]||'pending';}
 function approvedCredits(){
