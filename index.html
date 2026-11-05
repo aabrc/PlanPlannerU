@@ -388,7 +388,7 @@ function loadState(){
 }
 let state=loadState();
 let openPeriods=new Set([state.meta.currentPeriod||PLAN.periods[0].id]);
-function persist(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state));window.PlanPlannerUCloud?.scheduleSync();return true;}catch(e){console.warn('No se pudo guardar localmente',e);toast('El navegador no permitió guardar automáticamente. Exporta un respaldo para conservar tus cambios.');return false;}}
+function persist(){try{state._syncUpdatedAt=Date.now();localStorage.setItem(STORAGE_KEY,JSON.stringify(state));window.PlanPlannerUCloud?.scheduleSync();return true;}catch(e){console.warn('No se pudo guardar localmente',e);toast('El navegador no permitió guardar automáticamente. Exporta un respaldo para conservar tus cambios.');return false;}}
 function esc(v){return String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
 function courseState(code){return state.courseStates[code]||'pending';}
 function approvedCredits(){
