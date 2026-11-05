@@ -61,6 +61,8 @@ async function pushSnapshot() {
   };
   const { error } = await client.from("user_planner_data").upsert(payload, { onConflict: "user_id" });
   if (error) throw error;
+  state._syncUpdatedAt = Date.parse(payload.updated_at);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   setStatus("Sincronizado");
 }
 async function pullSnapshot() {
