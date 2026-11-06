@@ -56,11 +56,17 @@ export interface GradeAttempt {
   grade: number;
   createdAt: number;
 }
+export interface ScheduleViewRange {
+  start: number;
+  end: number;
+}
+
 export interface PlannerState {
   courseStates: Record<string, CourseStatus>;
   selections: Record<string, string>;
   externalDone: Record<string, boolean>;
   scheduleEvents: ScheduleEvent[];
+  scheduleView: ScheduleViewRange;
   gradeAttempts: GradeAttempt[];
   meta: {
     currentPeriod: string;
