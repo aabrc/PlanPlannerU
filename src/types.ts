@@ -59,6 +59,7 @@ export interface GradeAttempt {
 export interface ScheduleViewRange {
   start: number;
   end: number;
+  lastVisibleDay: number;
 }
 
 export interface PlannerState {
