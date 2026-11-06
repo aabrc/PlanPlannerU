@@ -53,7 +53,7 @@ function segmentsForDay(event: ScheduleEvent, dayIndex: number) {
 }
 
 function buildSegments(events: ScheduleEvent[], dayIndex: number): Segment[] {
-  const segments = events.flatMap((event) => segmentsForDay(event, dayIndex)).filter((segment) => segment.end > segment.start).sort((a, b) => a.start - b.start || a.end - b.end);
+  const segments: Segment[] = events.flatMap((event) => segmentsForDay(event, dayIndex)).filter((segment) => segment.end > segment.start).sort((a, b) => a.start - b.start || a.end - b.end).map((segment) => ({ ...segment, lane: 0, lanes: 1 }));
   const laneEnds: number[] = [];
   segments.forEach((segment) => {
     let lane = laneEnds.findIndex((end) => end <= segment.start);
