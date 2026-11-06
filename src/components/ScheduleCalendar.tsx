@@ -138,7 +138,6 @@ export default function ScheduleCalendar({
     dayIndex: index,
     segments: buildVisibleSegments(events, index, viewStart, viewEnd)
   }));
-  const daySegments = dayEntries.map((entry) => entry.segments);
 
   const openNew = () => { setMessage(""); setDraft(emptyDraft()); };
   const openEdit = (event: ScheduleEvent) => {
