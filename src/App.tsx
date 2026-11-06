@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import planData from "./data/plan.json";\nimport AcademicIndex from "./components/AcademicIndex";
+import planData from "./data/plan.json";
+import AcademicIndex from "./components/AcademicIndex";
 import { EXTERNAL_INFO } from "./data/externalRequirements";
 import {
   downloadBackup,
@@ -357,7 +358,8 @@ function App() {
             ["plan", "Pensum"],
             ["schedule", "Mi horario"],
             ["requirements", "Requisitos"],
-            ["meta", "Mi meta"],\n            ["index", "Mi índice"]
+            ["meta", "Mi meta"],
+            ["index", "Mi índice"]
           ] as [Page, string][]).map(([id, label]) => (
             <button key={id} type="button" className={page === id ? "nav-button active" : "nav-button"} onClick={() => setPage(id)}>
               {label}
@@ -480,7 +482,18 @@ function App() {
           </>
         )}
 
-        {page === "index" && (\n          <AcademicIndex\n            periods={PLAN.periods}\n            groups={PLAN.groups}\n            courses={ALL_COURSES}\n            selections={planner.selections}\n            gradeAttempts={planner.gradeAttempts}\n            onGradeAttemptsChange={(gradeAttempts) => persistState({ ...planner, gradeAttempts })}\n          />\n        )}\n\n        {page === "requirements" && (
+        {page === "index" && (
+          <AcademicIndex
+            periods={PLAN.periods}
+            groups={PLAN.groups}
+            courses={ALL_COURSES}
+            selections={planner.selections}
+            gradeAttempts={planner.gradeAttempts}
+            onGradeAttemptsChange={(gradeAttempts) => persistState({ ...planner, gradeAttempts })}
+          />
+        )}
+
+        {page === "requirements" && (
           <>
             <PageHeading eyebrow="REVISIÓN ACADÉMICA" title="Requisitos externos" description="MAT311 e ILE203 están reconocidos como cumplidos por tu examen de admisión. Los demás códigos requieren confirmación." />
             <div className="requirements-list">
