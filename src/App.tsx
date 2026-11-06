@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import planData from "./data/plan.json";
 import AcademicIndex from "./components/AcademicIndex";
+import AcademicAdvisor from "./components/AcademicAdvisor";
 import ScheduleCalendar from "./components/ScheduleCalendar";
 import { EXTERNAL_INFO } from "./data/externalRequirements";
 import {
@@ -53,6 +54,14 @@ function courseList(): Course[] {
 const ALL_COURSES = courseList();
 const COURSE_BY_CODE = new Map(ALL_COURSES.map((course) => [course.code, course]));
 const GROUP_BY_ID = new Map(PLAN.groups.map((group) => [group.id, group]));
+
+function periodLabelForCourse(code: string): string {
+  const period = PLAN.periods.find((item) =>
+    item.courses.some((course) => course.code === code) ||
+    item.groups.some((groupId) => GROUP_BY_ID.get(groupId)?.options.some((course) => course.code === code))
+  );
+  return period?.label || "Electiva seleccionada";
+}
 
 function getInitialState(): PlannerState {
   return loadPlannerState(EXTERNAL_CODES);
@@ -268,6 +277,70 @@ function App() {
 
   const activeCourses = ALL_COURSES.filter((course) => statusOf(planner, course.code) !== "pending").length;
 
+  const academicAdvice = useMemo(() => {
+    const selectedElectives = PLAN.groups
+      .map((group) => {
+        const code = planner.selections[group.id];
+        return code ? COURSE_BY_CODE.get(code) : undefined;
+      })
+      .filter((course): course is Course => !!course);
+    const candidates = Array.from(new Map(
+      [...PLAN.periods.flatMap((period) => period.courses), ...selectedElectives]
+        .map((course) => [course.code, course])
+    ).values());
+
+    const dependents = new Map<string, Set<string>>();
+    for (const course of candidates) {
+      for (const requirement of course.req || []) {
+        if (!COURSE_BY_CODE.has(requirement)) continue;
+        const list = dependents.get(requirement) || new Set<string>();
+        list.add(course.code);
+        dependents.set(requirement, list);
+      }
+    }
+
+    const countDownstream = (code: string, visited = new Set<string>()): number => {
+      let total = 0;
+      for (const dependent of dependents.get(code) || []) {
+        if (visited.has(dependent)) continue;
+        visited.add(dependent);
+        total += 1 + countDownstream(dependent, visited);
+      }
+      return total;
+    };
+
+    const recommendations = candidates
+      .filter((course) =>
+        statusOf(planner, course.code) === "pending" &&
+        blockersFor(course, planner).length === 0
+      )
+      .map((course) => ({
+        course,
+        unlocks: countDownstream(course.code),
+        periodLabel: periodLabelForCourse(course.code)
+      }))
+      .sort((a, b) => b.unlocks - a.unlocks || a.course.code.localeCompare(b.course.code))
+      .slice(0, 3);
+
+    const currentPeriodIndex = PLAN.periods.findIndex((period) => period.id === planner.meta.currentPeriod);
+    const laggedCourses = currentPeriodIndex < 0
+      ? []
+      : PLAN.periods.slice(0, currentPeriodIndex).flatMap((period) =>
+          period.courses
+            .filter((course) =>
+              statusOf(planner, course.code) === "pending" &&
+              blockersFor(course, planner).length === 0
+            )
+            .map((course) => ({ course, periodLabel: period.label }))
+        ).slice(0, 6);
+
+    return {
+      recommendations,
+      laggedCourses,
+      hasCurrentPeriod: currentPeriodIndex >= 0
+    };
+  }, [planner]);
+
   const handleImport = async (file?: File) => {
     if (!file) return;
     try {
@@ -280,6 +353,17 @@ function App() {
     } finally {
       if (importRef.current) importRef.current.value = "";
     }
+  };
+
+  const openAdvisorCourse = (courseCode: string) => {
+    const period = PLAN.periods.find((item) =>
+      item.courses.some((course) => course.code === courseCode) ||
+      item.groups.some((groupId) => GROUP_BY_ID.get(groupId)?.options.some((course) => course.code === courseCode))
+    );
+    if (period) setExpanded([period.id]);
+    setFilter("all");
+    setSearch(courseCode);
+    setPage("plan");
   };
 
   const setMeta = (key: string, value: string) => {
@@ -424,6 +508,13 @@ function App() {
               <div className="progress-track"><div className="progress-fill" style={{ width: progress + "%" }} /></div>
               <div className="progress-caption"><span>{approved} créditos completados</span><span>{PLAN.totalCredits - approved} por completar</span></div>
             </section>
+            <AcademicAdvisor
+              recommendations={academicAdvice.recommendations}
+              laggedCourses={academicAdvice.laggedCourses}
+              hasCurrentPeriod={academicAdvice.hasCurrentPeriod}
+              onOpenCourse={openAdvisorCourse}
+              onConfigurePeriod={() => setPage("meta")}
+            />
             <section className="two-column">
               <div className="paper-card">
                 <span className="eyebrow">CONTINÚA DONDE TE QUEDASTE</span>
@@ -442,7 +533,7 @@ function App() {
                 </div>
               </div>
             </section>
-            <p className="migration-note">PlanPlannerU continúa en migración. El pensum, el horario semanal y el cálculo del índice ya están disponibles en esta versión; el asesor académico, la sincronización y las funciones restantes se incorporarán gradualmente. La versión anterior se conserva como referencia.</p>
+            <p className="migration-note">PlanPlannerU continúa en migración. El pensum, el horario semanal y el cálculo del índice ya están disponibles en esta versión; la sincronización y otras funciones complementarias se incorporarán gradualmente. La versión anterior se conserva como referencia.</p>
             <a className="legacy-link" href="./legacy/index.html" target="_blank" rel="noreferrer">Abrir la versión anterior completa ↗</a>
           </>
         )}
