@@ -39,7 +39,18 @@ const emptyDraft = (): Draft => ({ id: "", courseCode: "", title: "", days: [], 
 const toMinutes = (value?: string) => { const [h, m] = (value || "00:00").split(":").map(Number); return h * 60 + m; };
 const fromMinutes = (value: number) => `${String(Math.floor(value / 60) % 24).padStart(2, "0")}:${String(value % 60).padStart(2, "0")}`;
 const TIME_OPTIONS = Array.from({ length: 49 }, (_, index) => index * 30);
-const formatMinutes = (value: number) => value === 1440 ? "24:00" : fromMinutes(value);
+const MINUTE_OPTIONS = Array.from({ length: 60 }, (_, index) => index);
+const PRINT_HOUR_HEIGHT = 24;
+const formatAxisMinutes = (value: number) => value === 1440 ? "24:00" : fromMinutes(value);
+const formatClock = (value: number) => {
+  if (value === 1440) return "12:00 a. m. (fin del día)";
+  const hour24 = Math.floor(value / 60) % 24;
+  const hour12 = hour24 % 12 || 12;
+  const minute = String(value % 60).padStart(2, "0");
+  const period = hour24 >= 12 ? "p. m." : "a. m.";
+  return `${hour12}:${minute} ${period}`;
+};
+const formatStoredClock = (value?: string) => formatClock(toMinutes(value));
 const hasSchedule = (event: ScheduleEvent) => !!event.days?.length && !!event.start && !!event.end;
 const makeId = () => globalThis.crypto?.randomUUID?.() || `evt-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
@@ -115,12 +126,19 @@ export default function ScheduleCalendar({
   const viewEnd = scheduleView.end;
   const scheduled = useMemo(() => events.filter(hasSchedule), [events]);
   const unscheduled = useMemo(() => events.filter((event) => event.courseCode && !hasSchedule(event)), [events]);
+  const visibleDays = DAYS.slice(0, scheduleView.lastVisibleDay + 1);
   const viewHeight = ((viewEnd - viewStart) / 60) * HOUR_HEIGHT;
+  const printViewHeight = ((viewEnd - viewStart) / 60) * PRINT_HOUR_HEIGHT;
   const timeTicks: number[] = [viewStart];
   for (let minute = (Math.floor(viewStart / 60) + 1) * 60; minute < viewEnd; minute += 60) {
     timeTicks.push(minute);
   }
-  const daySegments = DAYS.map((_, index) => buildVisibleSegments(events, index, viewStart, viewEnd));
+  const dayEntries = visibleDays.map((day, index) => ({
+    day,
+    dayIndex: index,
+    segments: buildVisibleSegments(events, index, viewStart, viewEnd)
+  }));
+  const daySegments = dayEntries.map((entry) => entry.segments);
 
   const openNew = () => { setMessage(""); setDraft(emptyDraft()); };
   const openEdit = (event: ScheduleEvent) => {
@@ -165,32 +183,55 @@ export default function ScheduleCalendar({
         <div className="schedule-view-controls">
           <label>Desde
             <select value={viewStart} onChange={(event) => onScheduleViewChange({ ...scheduleView, start: Number(event.target.value) })}>
-              {TIME_OPTIONS.filter((minute) => minute < viewEnd).map((minute) => <option value={minute} key={minute}>{formatMinutes(minute)}</option>)}
+              {TIME_OPTIONS.filter((minute) => minute < viewEnd).map((minute) => <option value={minute} key={minute}>{formatClock(minute)}</option>)}
             </select>
           </label>
           <label>Hasta
             <select value={viewEnd} onChange={(event) => onScheduleViewChange({ ...scheduleView, end: Number(event.target.value) })}>
-              {TIME_OPTIONS.filter((minute) => minute > viewStart).map((minute) => <option value={minute} key={minute}>{formatMinutes(minute)}</option>)}
+              {TIME_OPTIONS.filter((minute) => minute > viewStart).map((minute) => <option value={minute} key={minute}>{formatClock(minute)}</option>)}
             </select>
           </label>
-          <button className="secondary-button" type="button" onClick={() => onScheduleViewChange({ start: 0, end: 1440 })} disabled={viewStart === 0 && viewEnd === 1440}>Mostrar todo</button>
+          <button className="secondary-button" type="button" onClick={() => onScheduleViewChange({ ...scheduleView, start: 0, end: 1440, lastVisibleDay: 6 })} disabled={viewStart === 0 && viewEnd === 1440 && scheduleView.lastVisibleDay === 6}>Mostrar todo</button>
           <button className="primary-button" type="button" onClick={() => window.print()}>Exportar PDF</button>
+        </div>
+        <div className="schedule-day-controls" role="group" aria-label="Días visibles">
+          <strong>Mostrar días</strong>
+          {DAYS.map((day, index) => {
+            const visible = index <= scheduleView.lastVisibleDay;
+            return (
+              <label className={visible ? "schedule-day-toggle visible" : "schedule-day-toggle"} key={day.id}>
+                <input
+                  type="checkbox"
+                  checked={visible}
+                  disabled={index === 0}
+                  onChange={(event) => {
+                    const lastVisibleDay = event.target.checked
+                      ? Math.max(scheduleView.lastVisibleDay, index)
+                      : Math.max(0, index - 1);
+                    onScheduleViewChange({ ...scheduleView, lastVisibleDay });
+                  }}
+                />
+                {day.short}
+              </label>
+            );
+          })}
+          <small>Al ocultar un día, también se ocultan los días siguientes.</small>
         </div>
       </div>
       <div className="schedule-legend"><span><i className="schedule-legend-dot class-dot" />Clases</span><span><i className="schedule-legend-dot personal-dot" />Actividades personales</span></div>
       {unscheduled.length > 0 && <section className="unscheduled-panel"><h3>Materias en curso por organizar</h3><p>Ya están añadidas a tu horario. Solo falta indicar los días y las horas en que las cursas.</p><div className="unscheduled-list">{unscheduled.map((event) => <div className="unscheduled-row" key={event.id}><div><strong>{event.courseCode} · {event.title}</strong><small>En curso · falta asignar días y horas</small></div><button className="secondary-button" type="button" onClick={() => openEdit(event)}>Elegir días y horas</button></div>)}</div></section>}
-      <div className="calendar-shell"><div className="calendar-grid-react" style={{ gridTemplateRows: `58px ${viewHeight}px` }}>
+      <div className="calendar-shell"><div className="calendar-grid-react" style={{ gridTemplateColumns: `62px repeat(${visibleDays.length}, minmax(112px, 1fr))`, gridTemplateRows: `58px ${viewHeight}px` }}>
         <div className="calendar-corner-react" />
-        {DAYS.map((day, index) => <div className="calendar-day-head" key={day.id}><strong>{day.name}</strong><small>{daySegments[index].length} bloques</small></div>)}
-        <div className="calendar-time-axis">{timeTicks.map((minute) => <span key={minute} style={{ top: (minute - viewStart) / 60 * HOUR_HEIGHT }}>{formatMinutes(minute)}</span>)}</div>
-        {DAYS.map((day, index) => <div className="calendar-day-lane" key={day.id} style={{ height: viewHeight }}>
+        {dayEntries.map(({ day, segments }) => <div className="calendar-day-head" key={day.id}><strong>{day.name}</strong><small>{segments.length} bloques</small></div>)}
+        <div className="calendar-time-axis">{timeTicks.map((minute) => <span key={minute} style={{ top: (minute - viewStart) / 60 * HOUR_HEIGHT }}>{formatAxisMinutes(minute)}</span>)}</div>
+        {dayEntries.map(({ day, segments }) => <div className="calendar-day-lane" key={day.id} style={{ height: viewHeight }}>
           {timeTicks.map((minute) => <i className="calendar-hour-line" key={minute} style={{ top: (minute - viewStart) / 60 * HOUR_HEIGHT }} />)}
-          {daySegments[index].map((segment, segmentIndex) => {
+          {segments.map((segment, segmentIndex) => {
             const color = segment.event.courseCode ? { bg: "#dceeff", border: "#86bce4", text: "#174f78" } : (COLORS.find((item) => item.id === segment.event.color) || COLORS[0]);
             const top = (segment.start - viewStart) / 60 * HOUR_HEIGHT;
             const height = Math.max(18, (segment.end - segment.start) / 60 * HOUR_HEIGHT);
             const width = 100 / segment.lanes, left = segment.lane * width;
-            const time = `${formatMinutes(segment.start)}–${formatMinutes(segment.end)}`;
+            const time = `${formatAxisMinutes(segment.start)}–${formatAxisMinutes(segment.end)}`;
             const continuation = segment.part === "end" ? " · continúa" : segment.part === "start" ? " · continúa mañana" : "";
             return <button key={segment.event.id + segment.part + segmentIndex} type="button" className={segment.event.courseCode ? "calendar-event-react class-event" : "calendar-event-react personal-event"} style={{ top, height, left: `calc(${left}% + 2px)`, width: `calc(${width}% - 4px)`, background: color.bg, borderColor: color.border, color: color.text }} onClick={() => openEdit(segment.event)} title={`Editar ${segment.event.title}`}><strong>{segment.event.title}</strong><span>{time}{continuation}</span></button>;
           })}
@@ -200,27 +241,47 @@ export default function ScheduleCalendar({
       <section className="schedule-print-report">
         <header className="schedule-print-header">
           <div><span>PLANPLANNERU · INGENIERÍA TELEMÁTICA · ITT-2020</span><h1>Mi horario semanal</h1></div>
-          <div><strong>Intervalo visible</strong><span>{formatMinutes(viewStart)}–{formatMinutes(viewEnd)}</span><small>Exportado el {new Date().toLocaleDateString("es-DO", { day: "numeric", month: "long", year: "numeric" })}</small></div>
+          <div><strong>Intervalo visible</strong><span>{formatClock(viewStart)}–{formatClock(viewEnd)}</span><small>Exportado el {new Date().toLocaleDateString("es-DO", { day: "numeric", month: "long", year: "numeric" })}</small></div>
         </header>
-        <div className="schedule-print-grid">
-          {DAYS.map((day, index) => (
-            <section className="schedule-print-day" key={day.id}>
-              <h2>{day.name}</h2>
-              {daySegments[index].length ? daySegments[index].map((segment, segmentIndex) => {
+        <div className="schedule-print-grid" style={{ gridTemplateColumns: `43px repeat(${visibleDays.length}, minmax(0, 1fr))`, gridTemplateRows: `24px ${printViewHeight}px` }}>
+          <div className="schedule-print-corner" />
+          {dayEntries.map(({ day }) => <div className="schedule-print-day-heading" key={day.id}>{day.name}</div>)}
+          <div className="schedule-print-time-axis" style={{ height: printViewHeight }}>
+            {timeTicks.map((minute) => <span key={minute} style={{ top: (minute - viewStart) / 60 * PRINT_HOUR_HEIGHT }}>{formatAxisMinutes(minute)}</span>)}
+          </div>
+          {dayEntries.map(({ day, segments }) => (
+            <section className="schedule-print-day" key={day.id} style={{ height: printViewHeight }}>
+              {timeTicks.map((minute) => <i className="schedule-print-hour-line" key={minute} style={{ top: (minute - viewStart) / 60 * PRINT_HOUR_HEIGHT }} />)}
+              {segments.map((segment, segmentIndex) => {
                 const color = segment.event.courseCode ? { bg: "#dceeff", text: "#174f78" } : (COLORS.find((item) => item.id === segment.event.color) || COLORS[0]);
+                const top = (segment.start - viewStart) / 60 * PRINT_HOUR_HEIGHT;
+                const height = Math.max(7, (segment.end - segment.start) / 60 * PRINT_HOUR_HEIGHT);
+                const width = 100 / segment.lanes, left = segment.lane * width;
                 const continuation = segment.part === "end" ? " · continúa" : segment.part === "start" ? " · continúa mañana" : "";
-                return <article className="schedule-print-event" key={segment.event.id + segment.part + segmentIndex} style={{ background: color.bg, borderLeftColor: color.text, color: color.text }}>
+                return <article
+                  className="schedule-print-event"
+                  key={segment.event.id + segment.part + segmentIndex}
+                  style={{
+                    top,
+                    height,
+                    left: `calc(${left}% + 1px)`,
+                    width: `calc(${width}% - 2px)`,
+                    background: color.bg,
+                    borderLeftColor: color.text,
+                    color: color.text
+                  }}
+                >
                   <strong>{segment.event.title}</strong>
-                  <span>{formatMinutes(segment.start)}–{formatMinutes(segment.end)}{continuation}</span>
+                  <span>{formatAxisMinutes(segment.start)}–{formatAxisMinutes(segment.end)}{continuation}</span>
                 </article>;
-              }) : <p className="schedule-print-empty">Sin actividades</p>}
+              })}
             </section>
           ))}
         </div>
         <footer className="schedule-print-footer">Documento personal generado por PlanPlannerU. No constituye un horario oficial emitido por la PUCMM.</footer>
       </section>
 
-      <div className="schedule-registered-list">{scheduled.length ? scheduled.map((event) => <button type="button" className="schedule-registered-item" key={event.id} onClick={() => openEdit(event)}><span><strong>{event.courseCode ? event.courseCode + " · " : ""}{event.title}</strong><small>{(event.days || []).map((id) => DAYS.find((day) => day.id === id)?.short || id).join(", ")} · {event.start}–{event.end}{toMinutes(event.end) < toMinutes(event.start) ? " (+1 día)" : ""}</small></span><span aria-hidden="true">✎</span></button>) : <p className="empty-message">Todavía no hay bloques con horario asignado.</p>}</div>
+      <div className="schedule-registered-list">{scheduled.length ? scheduled.map((event) => <button type="button" className="schedule-registered-item" key={event.id} onClick={() => openEdit(event)}><span><strong>{event.courseCode ? event.courseCode + " · " : ""}{event.title}</strong><small>{(event.days || []).map((id) => DAYS.find((day) => day.id === id)?.short || id).join(", ")} · {formatStoredClock(event.start)}–{formatStoredClock(event.end)}{toMinutes(event.end) < toMinutes(event.start) ? " (+1 día)" : ""}</small></span><span aria-hidden="true">✎</span></button>) : <p className="empty-message">Todavía no hay bloques con horario asignado.</p>}</div>
 
       {draft && <div className="schedule-modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setDraft(null); }}>
         <form className="schedule-modal" onSubmit={save} aria-label="Formulario de actividad">
@@ -228,11 +289,55 @@ export default function ScheduleCalendar({
           {!draft.courseCode && <label className="schedule-field">Nombre de la actividad<input autoFocus value={draft.title} onChange={(event) => setDraft({ ...draft, title: event.target.value })} placeholder="Ej. Estudiar, correr, cocinar…" maxLength={70} /></label>}
           {!draft.courseCode && <fieldset className="schedule-color-field"><legend>Color de la actividad</legend><div className="schedule-color-palette">{COLORS.map((color) => <button type="button" key={color.id} className={draft.color === color.id ? "schedule-color-choice selected" : "schedule-color-choice"} onClick={() => setDraft({ ...draft, color: color.id })} aria-label={color.name} title={color.name} style={{ background: color.bg, borderColor: color.border }}><span style={{ background: color.text }} />{color.name}</button>)}</div></fieldset>}
           <fieldset className="schedule-days-field"><legend>Días de la semana</legend><div className="schedule-day-choices">{DAYS.map((day) => <label key={day.id}><input type="checkbox" checked={draft.days.includes(day.id)} onChange={(event) => setDraft({ ...draft, days: event.target.checked ? [...draft.days, day.id] : draft.days.filter((id) => id !== day.id) })} />{day.name}</label>)}</div></fieldset>
-          <div className="schedule-time-fields"><label className="schedule-field">Hora de inicio<input type="time" value={draft.start} onChange={(event) => setDraft({ ...draft, start: event.target.value })} /></label><label className="schedule-field">Hora de finalización<input type="time" value={draft.end} onChange={(event) => setDraft({ ...draft, end: event.target.value })} /></label></div>
+          <div className="schedule-time-fields">
+            <TimePicker label="Hora de inicio" value={draft.start} onChange={(start) => setDraft({ ...draft, start })} />
+            <TimePicker label="Hora de finalización" value={draft.end} onChange={(end) => setDraft({ ...draft, end })} />
+          </div>
           {message && <p className="schedule-form-message" role="alert">{message}</p>}
           <div className="schedule-modal-actions">{draft.id && !draft.courseCode && <button type="button" className="schedule-delete-button" onClick={remove}>Eliminar actividad</button>}<span /><button type="button" className="secondary-button" onClick={() => setDraft(null)}>Cancelar</button><button type="submit" className="primary-button">Guardar horario</button></div>
         </form>
       </div>}
     </section>
+  );
+}
+
+
+function TimePicker({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
+  const totalMinutes = toMinutes(value);
+  const hour24 = Math.floor(totalMinutes / 60) % 24;
+  const hour12 = hour24 % 12 || 12;
+  const minute = totalMinutes % 60;
+  const period = hour24 >= 12 ? "PM" : "AM";
+
+  const update = (nextHour: number, nextMinute: number, nextPeriod: "AM" | "PM") => {
+    const normalizedHour = (nextHour % 12) + (nextPeriod === "PM" ? 12 : 0);
+    onChange(`${String(normalizedHour).padStart(2, "0")}:${String(nextMinute).padStart(2, "0")}`);
+  };
+
+  return (
+    <fieldset className="schedule-time-picker">
+      <legend>{label}</legend>
+      <div className="schedule-time-picker-controls">
+        <label>
+          <span>Hora</span>
+          <select value={hour12} onChange={(event) => update(Number(event.target.value), minute, period)}>
+            {Array.from({ length: 12 }, (_, index) => index + 1).map((hour) => <option value={hour} key={hour}>{hour}</option>)}
+          </select>
+        </label>
+        <label>
+          <span>Minutos</span>
+          <select value={minute} onChange={(event) => update(hour12, Number(event.target.value), period)}>
+            {MINUTE_OPTIONS.map((item) => <option value={item} key={item}>{String(item).padStart(2, "0")}</option>)}
+          </select>
+        </label>
+        <label>
+          <span>Período</span>
+          <select value={period} onChange={(event) => update(hour12, minute, event.target.value as "AM" | "PM")}>
+            <option value="AM">a. m.</option>
+            <option value="PM">p. m.</option>
+          </select>
+        </label>
+      </div>
+    </fieldset>
   );
 }
