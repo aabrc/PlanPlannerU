@@ -220,7 +220,7 @@ export default function ScheduleCalendar({
       </div>
       <div className="schedule-legend"><span><i className="schedule-legend-dot class-dot" />Clases</span><span><i className="schedule-legend-dot personal-dot" />Actividades personales</span></div>
       {unscheduled.length > 0 && <section className="unscheduled-panel"><h3>Materias en curso por organizar</h3><p>Ya están añadidas a tu horario. Solo falta indicar los días y las horas en que las cursas.</p><div className="unscheduled-list">{unscheduled.map((event) => <div className="unscheduled-row" key={event.id}><div><strong>{event.courseCode} · {event.title}</strong><small>En curso · falta asignar días y horas</small></div><button className="secondary-button" type="button" onClick={() => openEdit(event)}>Elegir días y horas</button></div>)}</div></section>}
-      <div className="calendar-shell"><div className="calendar-grid-react" style={{ gridTemplateColumns: `62px repeat(${visibleDays.length}, minmax(112px, 1fr))`, gridTemplateRows: `58px ${viewHeight}px` }}>
+      <div className="calendar-shell"><div className="calendar-grid-react" style={{ minWidth: `${62 + visibleDays.length * 112}px`, gridTemplateColumns: `62px repeat(${visibleDays.length}, minmax(112px, 1fr))`, gridTemplateRows: `58px ${viewHeight}px` }}>
         <div className="calendar-corner-react" />
         {dayEntries.map(({ day, segments }) => <div className="calendar-day-head" key={day.id}><strong>{day.name}</strong><small>{segments.length} bloques</small></div>)}
         <div className="calendar-time-axis">{timeTicks.map((minute) => <span key={minute} style={{ top: (minute - viewStart) / 60 * HOUR_HEIGHT }}>{formatAxisMinutes(minute)}</span>)}</div>
