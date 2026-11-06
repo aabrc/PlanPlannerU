@@ -1,5 +1,4 @@
 export type CourseStatus = "pending" | "inprogress" | "approved";
-
 export interface Course {
   id?: string;
   code: string;
@@ -11,7 +10,6 @@ export interface Course {
   lab?: string;
   [key: string]: unknown;
 }
-
 export interface ElectiveGroup {
   id: string;
   name: string;
@@ -21,7 +19,6 @@ export interface ElectiveGroup {
   uniqueAcross?: string[];
   [key: string]: unknown;
 }
-
 export interface Period {
   id: string;
   year: number;
@@ -31,7 +28,6 @@ export interface Period {
   groups: string[];
   baseCredits: number;
 }
-
 export interface CurriculumPlan {
   periods: Period[];
   groups: ElectiveGroup[];
@@ -40,7 +36,6 @@ export interface CurriculumPlan {
   fixedCredits: number;
   electiveMinimumCredits: number;
 }
-
 export interface ScheduleEvent {
   id: string;
   courseCode?: string;
@@ -54,7 +49,6 @@ export interface ScheduleEvent {
   color?: string;
   [key: string]: unknown;
 }
-
 export interface PlannerState {
   courseStates: Record<string, CourseStatus>;
   selections: Record<string, string>;
