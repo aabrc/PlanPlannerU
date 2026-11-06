@@ -279,3 +279,387 @@ input::placeholder { color: #71808a; opacity: 1; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }
+
+/* Stronger, more readable visual system — November 2026 */
+:root {
+  --blue: #176fc1;
+  --green: #168541;
+  --yellow: #e8ad00;
+  --ink: #1f3448;
+  --muted: #4d6273;
+}
+body {
+  color: #20374b;
+  font-size: 16px;
+  line-height: 1.55;
+}
+button, input, select, textarea { font-size: 14px; }
+.eyebrow {
+  color: #4f6576;
+  font-size: 12px;
+  letter-spacing: .13em;
+}
+.page-heading { margin: 30px 0 21px; }
+.page-heading h1, .hero-sheet h1 {
+  color: #1d3449;
+  font-size: clamp(32px, 4vw, 46px);
+}
+.page-heading p, .hero-sheet p, .paper-card p {
+  color: #465d70;
+  font-size: 15px;
+  line-height: 1.75;
+}
+.topbar { border-bottom-color: #c9d7e0; }
+.nav-button {
+  color: #36536a;
+  font-size: 14px;
+  padding: 12px 15px;
+  min-height: 44px;
+}
+.nav-button.active {
+  color: #103f65;
+  background: #dceeff;
+  border: 1px solid #7db4df;
+  box-shadow: 0 2px 8px #176fc122;
+}
+.nav-button:hover, .secondary-button:hover, .filter-button:hover {
+  color: #123d60;
+  background: #e3f1fb;
+}
+.primary-button {
+  background: #176fc1;
+  border: 1px solid #125c9f;
+  font-size: 14px;
+  padding: 13px 18px;
+  min-height: 46px;
+}
+.primary-button:hover { background: #105b9d; }
+.secondary-button {
+  color: #174f78;
+  background: #eaf4fc;
+  border: 1px solid #9dc4e0;
+  font-size: 13px;
+  padding: 11px 15px;
+  min-height: 42px;
+}
+.stats-grid { gap: 15px; }
+.stat-card { border-color: #d2dce2; padding: 19px; }
+.stat-card span {
+  color: #4b6274;
+  font-size: 12px;
+}
+.stat-card strong { color: #203c54; font-size: 29px; }
+.stat-card small { color: #526879; font-size: 12px; }
+.panel-heading h2, .paper-card h2 { color: #203c54; font-size: 22px; }
+.progress-track { background: #e4e8e6; height: 14px; }
+.progress-fill { background: linear-gradient(90deg,#1976d2 0%,#159447 100%); }
+.plan-toolbar {
+  background: #f3f8fc;
+  border-color: #c9dce9;
+  padding: 15px;
+}
+.search-input {
+  color: #203c54;
+  font-size: 15px;
+  min-height: 46px;
+  padding: 12px 14px;
+}
+.filter-button {
+  color: #35536a;
+  background: #fff;
+  border: 1px solid #b9cbd7;
+  font-size: 12px;
+  padding: 10px 13px;
+  min-height: 40px;
+}
+.filter-button.active {
+  color: #fff;
+  background: #176fc1;
+  border-color: #176fc1;
+}
+.period-card { border-color: #cfd9dd; }
+.period-summary { background: #f4f8fa; padding: 17px 19px; }
+.period-summary strong { color: #253f55; font-size: 17px; }
+.period-summary small, .period-progress {
+  color: #4e6576;
+  font-size: 12px;
+}
+.period-card.complete { border: 2px solid #23934d; }
+.period-card.complete > summary {
+  background: #dff6e6;
+}
+.course-grid { gap: 13px; }
+.course-card, .elective-card {
+  border-color: #cbd7dd;
+  padding: 16px;
+}
+.course-card.approved {
+  background: #dff6e6;
+  border: 1px solid #38a45c;
+}
+.course-card.inprogress {
+  background: #e0f0ff;
+  border: 1px solid #4b9bd5;
+}
+.course-card.blocked, .course-card.lagged {
+  background: #fff3c4;
+  border: 1px solid #e0b52f;
+}
+.course-code { color: #155b94; font-size: 13px; }
+.course-name { color: #293f52; font-size: 15px; line-height: 1.5; }
+.course-details { color: #4f6473; font-size: 12px; }
+.status-badge {
+  font-size: 11px;
+  padding: 6px 9px;
+  border-radius: 8px;
+}
+.status-badge.pending { color: #485866; background: #e8edf0; }
+.status-badge.inprogress { color: #104e7e; background: #b9dcf5; }
+.status-badge.approved { color: #125c2e; background: #bfe9c9; }
+.status-badge.blocked, .status-badge.lagged {
+  color: #704d00;
+  background: #ffe28a;
+}
+.state-button {
+  color: #174e75;
+  background: #eff7fd;
+  border-color: #8db9d8;
+  border-radius: 9px;
+  padding: 10px 15px;
+  min-height: 42px;
+  font-size: 13px;
+}
+.state-button.pending { color: #15598f; background: #e1f0fc; border-color: #86b9df; }
+.state-button.inprogress { color: #104c79; background: #b8dcf5; border-color: #4c9bd5; }
+.state-button.approved { color: #125b2e; background: #bfe9c9; border-color: #55ad70; }
+.elective-section h3 { font-size: 18px; }
+.elective-heading h4 { color: #293f52; font-size: 15px; }
+.field-label, .form-field {
+  color: #435c70;
+  font-size: 13px;
+}
+.elective-card select, .form-field input, .form-field select,
+.index-period-select select, .add-course-row select {
+  min-height: 45px;
+  color: #253f54;
+  border-color: #aebfc9;
+  font-size: 14px;
+  padding: 10px 12px;
+}
+.external-row { border-color: #cbd9df; padding: 15px; }
+.external-copy strong { color: #155b94; font-size: 13px; }
+.external-copy small { color: #445e70; font-size: 13px; }
+.external-state { color: #41596c; font-size: 12px; }
+.external-row.is-done { background: #dff6e6; border-color: #53a96e; }
+.notice-panel {
+  background: #fff0b8;
+  border-color: #dfb52c;
+  color: #664900;
+  font-size: 13px;
+}
+.empty-message {
+  color: #4c6272;
+  background: #edf3f6;
+  border: 1px solid #d1dce1;
+  font-size: 14px;
+}
+.app-footer { color: #526879; font-size: 12px; }
+
+/* Academic index: larger controls, saturated status colors and clear guidance */
+.index-guide {
+  margin: 0 0 20px;
+  padding: 22px;
+  border: 1px solid #9fc5df;
+  border-left: 7px solid #176fc1;
+  border-radius: 16px;
+  background: #edf6fd;
+  box-shadow: 0 5px 16px #1b5a8310;
+}
+.index-guide-heading { display: flex; align-items: flex-start; gap: 15px; }
+.index-guide-icon {
+  display: grid;
+  flex: 0 0 48px;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border-radius: 13px;
+  background: #176fc1;
+  color: white;
+  font-size: 30px;
+  font-weight: 700;
+}
+.index-guide-heading h2 {
+  color: #173f60;
+  font: 700 23px Georgia,serif;
+  margin: 4px 0 6px;
+}
+.index-guide-heading p {
+  color: #36566d;
+  font-size: 14px;
+  line-height: 1.65;
+  margin: 0;
+}
+.index-guide-steps {
+  display: grid;
+  grid-template-columns: repeat(3,minmax(0,1fr));
+  gap: 12px;
+  margin-top: 17px;
+}
+.index-guide-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 15px;
+  border-radius: 12px;
+  border: 1px solid;
+}
+.index-guide-step.blue { background: #dceeff; border-color: #7eb5df; }
+.index-guide-step.green { background: #dcf5e2; border-color: #72bd88; }
+.index-guide-step.yellow { background: #fff0b8; border-color: #e2bd45; }
+.index-step-number {
+  display: grid;
+  flex: 0 0 30px;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: 50%;
+  background: #176fc1;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 900;
+}
+.index-guide-step.green .index-step-number { background: #168541; }
+.index-guide-step.yellow .index-step-number { background: #b47b00; }
+.index-guide-step h3 {
+  color: #203c54;
+  font-size: 15px;
+  margin: 2px 0 8px;
+}
+.index-guide-step p {
+  color: #354f62;
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 6px 0 0;
+}
+.index-intro, .index-entry-panel, .index-formula { padding: 21px; }
+.index-intro > strong, .index-formula > strong { color: #203c54; font-size: 20px; }
+.index-intro > p, .index-entry-panel > p, .index-formula > p {
+  color: #465e70;
+  font-size: 14px;
+  line-height: 1.7;
+}
+.index-mode-button {
+  color: #204d6d;
+  border: 1px solid #8eafc4;
+  background: #f4f9fc;
+  border-radius: 11px;
+  font-size: 14px;
+  padding: 12px 17px;
+  min-height: 48px;
+}
+.index-mode-button.active {
+  color: #fff;
+  background: #176fc1;
+  border-color: #125a9a;
+  box-shadow: 0 3px 9px #176fc133;
+}
+.index-panel-heading h2, .index-entry-panel h2 {
+  color: #203c54;
+  font-size: 22px;
+}
+.index-panel-heading p { color: #465e70; font-size: 14px; }
+.index-period-select, .add-course-row label {
+  color: #40596c;
+  font-size: 13px;
+}
+.add-course-row {
+  background: #fff5cf;
+  border: 1px solid #e4c85d;
+  padding: 15px;
+}
+.add-course-row button:disabled { opacity: .62; }
+.grade-entry-row {
+  border-color: #c7d4db;
+  padding: 15px;
+  gap: 12px;
+}
+.grade-course-copy strong { color: #155b94; font-size: 13px; }
+.grade-course-copy span { color: #344e62; font-size: 14px; }
+.grade-course-credits { color: #425a6c; font-size: 12px; }
+.grade-input-field { color: #3f596d; font-size: 12px; }
+.grade-input-field input {
+  min-height: 45px;
+  font-size: 15px;
+  padding: 10px 12px;
+  border-color: #9fb3c0;
+}
+.grade-quality { color: #35566c; font-size: 12px; font-weight: 700; }
+.grade-save-button, .grade-remove-button {
+  font-size: 12px;
+  padding: 10px 13px;
+  min-height: 42px;
+}
+.grade-save-button {
+  color: white;
+  background: #168541;
+  border-color: #116c34;
+}
+.grade-save-button:hover { background: #116d35; }
+.grade-remove-button {
+  color: #714c00;
+  background: #fff0b8;
+  border-color: #dfb633;
+}
+.index-feedback {
+  color: #125c2e;
+  font-size: 13px;
+  font-weight: 700;
+}
+.cumulative-grade-row {
+  color: #3e5668;
+  font-size: 13px;
+  padding: 13px;
+}
+.cumulative-grade-row strong { color: #203f57; }
+.cumulative-grade-row small { color: #4e6576; font-size: 12px; }
+.index-result-panel {
+  background: #d9f3df;
+  border: 2px solid #55a96f;
+  border-left: 8px solid #168541;
+  padding: 23px;
+}
+.index-result-main span {
+  color: #225b35;
+  font-size: 12px;
+}
+.index-result-main strong {
+  color: #11652f;
+  font-size: 52px;
+}
+.index-result-main small { color: #365f43; font-size: 12px; }
+.index-result-details strong { color: #214d31; font-size: 26px; }
+.index-result-details span { color: #3d6248; font-size: 12px; }
+.grade-scale span {
+  color: #344e62;
+  background: #f3f7f9;
+  border: 1px solid #c5d3db;
+  font-size: 13px;
+  padding: 10px 12px;
+}
+.grade-scale strong { color: #173f60; }
+.index-form > small {
+  color: #435c6d;
+  font-size: 13px;
+  line-height: 1.7;
+}
+@media (max-width: 900px) {
+  .index-guide-steps { grid-template-columns: 1fr; }
+}
+@media (max-width: 620px) {
+  .nav-button { font-size: 13px; padding: 11px 12px; }
+  .index-guide { padding: 16px; }
+  .index-guide-heading h2 { font-size: 20px; }
+  .index-guide-step p { font-size: 13px; }
+  .index-mode-button { width: 100%; }
+  .grade-entry-row { padding: 13px; }
+}
