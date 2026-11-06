@@ -4,6 +4,16 @@ export const STORAGE_KEY = "itt2020_pensum_tracker_v2";
 
 const AUTO_COMPLETED_EXTERNAL = ["MAT311", "ILE203"];
 
+function normalizeScheduleView(saved?: { start?: number; end?: number }): { start: number; end: number } {
+  const validStart = Number.isInteger(saved?.start) && saved.start! >= 0 && saved.start! < 1440 && saved.start! % 30 === 0;
+  const validEnd = Number.isInteger(saved?.end) && saved.end! > 0 && saved.end! <= 1440 && saved.end! % 30 === 0;
+  const start = validStart ? saved!.start! : 0;
+  const end = validEnd ? saved!.end! : 1440;
+
+  if (end <= start) return { start: 0, end: 1440 };
+  return { start, end };
+}
+
 function blankState(externalCodes: string[]): PlannerState {
   const externalDone = Object.fromEntries(
     externalCodes.map((code) => [code, AUTO_COMPLETED_EXTERNAL.includes(code)])
@@ -13,6 +23,7 @@ function blankState(externalCodes: string[]): PlannerState {
     selections: {},
     externalDone,
     scheduleEvents: [],
+    scheduleView: { start: 0, end: 1440 },
     gradeAttempts: [],
     meta: { currentPeriod: "", loadPerTerm: "15", gpa: "", internship: 0 }
   };
@@ -35,6 +46,7 @@ export function normalizePlannerState(
     selections: { ...(saved?.selections || {}) },
     externalDone,
     scheduleEvents: Array.isArray(saved?.scheduleEvents) ? saved.scheduleEvents : [],
+    scheduleView: normalizeScheduleView(saved?.scheduleView),
     gradeAttempts: Array.isArray(saved?.gradeAttempts) ? saved.gradeAttempts : [],
     meta: { ...base.meta, ...(saved?.meta || {}) }
   };
