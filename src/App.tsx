@@ -537,7 +537,7 @@ function App() {
                   <input type="number" min="1" max="30" value={planner.meta.loadPerTerm} onChange={(event) => setMeta("loadPerTerm", event.target.value)} />
                 </label>
                 <label className="form-field">Índice académico acumulado
-                  <input type="number" min="0" max="4" step="0.01" value={planner.meta.gpa} onChange={(event) => setMeta("gpa", event.target.value)} placeholder="Ej. 3.50" />
+                  <input type="number" min="0" max="4" step="0.1" value={planner.meta.gpa} onChange={(event) => setMeta("gpa", event.target.value)} placeholder="Ej. 3.5" />
                 </label>
                 <label className="form-field">Horas de pasantía completadas
                   <input type="number" min="0" max="320" value={planner.meta.internship} onChange={(event) => setMeta("internship", event.target.value)} />
@@ -546,7 +546,7 @@ function App() {
               <section className="paper-card">
                 <h2>Requisitos de graduación</h2>
                 <div className="graduation-check"><span className={approved >= PLAN.totalCredits ? "check done" : "check"}>✓</span><span>Completar {PLAN.totalCredits} créditos ({approved}/{PLAN.totalCredits}).</span></div>
-                <div className="graduation-check"><span className={Number(planner.meta.gpa) >= 2 ? "check done" : "check"}>✓</span><span>Índice acumulado mínimo de 2.00.</span></div>
+                <div className="graduation-check"><span className={Number(planner.meta.gpa) >= 2 ? "check done" : "check"}>✓</span><span>Índice acumulado mínimo de 2.0.</span></div>
                 <div className="graduation-check"><span className={approved >= Math.ceil(PLAN.totalCredits * .75) ? "check done" : "check"}>✓</span><span>Alcanzar el 75 % del plan ({Math.ceil(PLAN.totalCredits * .75)} créditos).</span></div>
                 <div className="graduation-check"><span className={approved >= Math.ceil(PLAN.totalCredits * .75) && Number(planner.meta.internship) >= 320 ? "check done" : "check"}>✓</span><span>Completar 320 horas de pasantía después del 75 %.</span></div>
                 <div className="progress-track"><div className="progress-fill" style={{ width: Math.min(100, Number(planner.meta.internship) / 320 * 100) + "%" }} /></div>
