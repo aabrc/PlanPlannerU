@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import type { FormEvent } from "react";
-import type { ScheduleEvent } from "../types";
+import type { ScheduleEvent, ScheduleViewRange } from "../types";
 
 const DAYS = [
   { id: "mon", name: "Lunes", short: "Lun" },
@@ -98,11 +98,21 @@ function getConflicts(candidate: ScheduleEvent, events: ScheduleEvent[]) {
   return [...conflicts];
 }
 
-export default function ScheduleCalendar({ events, onChange }: { events: ScheduleEvent[]; onChange: (events: ScheduleEvent[]) => void }) {
+export default function ScheduleCalendar({
+  events,
+  onChange,
+  scheduleView,
+  onScheduleViewChange
+}: {
+  events: ScheduleEvent[];
+  onChange: (events: ScheduleEvent[]) => void;
+  scheduleView: ScheduleViewRange;
+  onScheduleViewChange: (range: ScheduleViewRange) => void;
+}) {
   const [draft, setDraft] = useState<Draft | null>(null);
   const [message, setMessage] = useState("");
-  const [viewStart, setViewStart] = useState(0);
-  const [viewEnd, setViewEnd] = useState(1440);
+  const viewStart = scheduleView.start;
+  const viewEnd = scheduleView.end;
   const scheduled = useMemo(() => events.filter(hasSchedule), [events]);
   const unscheduled = useMemo(() => events.filter((event) => event.courseCode && !hasSchedule(event)), [events]);
   const viewHeight = ((viewEnd - viewStart) / 60) * HOUR_HEIGHT;
@@ -154,16 +164,16 @@ export default function ScheduleCalendar({ events, onChange }: { events: Schedul
         </div>
         <div className="schedule-view-controls">
           <label>Desde
-            <select value={viewStart} onChange={(event) => setViewStart(Number(event.target.value))}>
+            <select value={viewStart} onChange={(event) => onScheduleViewChange({ ...scheduleView, start: Number(event.target.value) })}>
               {TIME_OPTIONS.filter((minute) => minute < viewEnd).map((minute) => <option value={minute} key={minute}>{formatMinutes(minute)}</option>)}
             </select>
           </label>
           <label>Hasta
-            <select value={viewEnd} onChange={(event) => setViewEnd(Number(event.target.value))}>
+            <select value={viewEnd} onChange={(event) => onScheduleViewChange({ ...scheduleView, end: Number(event.target.value) })}>
               {TIME_OPTIONS.filter((minute) => minute > viewStart).map((minute) => <option value={minute} key={minute}>{formatMinutes(minute)}</option>)}
             </select>
           </label>
-          <button className="secondary-button" type="button" onClick={() => { setViewStart(0); setViewEnd(1440); }} disabled={viewStart === 0 && viewEnd === 1440}>Mostrar todo</button>
+          <button className="secondary-button" type="button" onClick={() => onScheduleViewChange({ start: 0, end: 1440 })} disabled={viewStart === 0 && viewEnd === 1440}>Mostrar todo</button>
           <button className="primary-button" type="button" onClick={() => window.print()}>Exportar PDF</button>
         </div>
       </div>
