@@ -1,0 +1,2128 @@
+{
+  "periods": [
+    {
+      "id": "y1p1",
+      "year": 1,
+      "term": 1,
+      "label": "Año 1 · Período 1",
+      "courses": [
+        {
+          "id": "008567",
+          "code": "LET101",
+          "name": "Español I",
+          "credits": 4,
+          "req": [],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "009194",
+          "code": "MAT110",
+          "name": "Razonamiento Lógico-Matemático",
+          "credits": 4,
+          "req": [],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "009205",
+          "code": "MAT119",
+          "name": "Precálculo",
+          "credits": 4,
+          "req": [],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017095",
+          "code": "ICC101",
+          "name": "Introducción a la Algoritmia",
+          "credits": 3,
+          "req": [],
+          "additional": [
+            "MAT119"
+          ],
+          "gate": null
+        }
+      ],
+      "groups": [
+        "DEP-E01-P",
+        "FIL-E11-T"
+      ],
+      "baseCredits": 20
+    },
+    {
+      "id": "y1p2",
+      "year": 1,
+      "term": 2,
+      "label": "Año 1 · Período 2",
+      "courses": [
+        {
+          "id": "009219",
+          "code": "MAT129",
+          "name": "Cálculo Diferencial",
+          "credits": 4,
+          "req": [
+            "MAT119"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017112",
+          "code": "ITT122",
+          "name": "Introducción a las Telecomunicaciones",
+          "credits": 2,
+          "req": [],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017115",
+          "code": "ITT112",
+          "name": "Introducción a las Redes",
+          "credits": 3,
+          "req": [],
+          "additional": [
+            "1ITT112"
+          ],
+          "gate": null
+        },
+        {
+          "id": "017116",
+          "code": "1ITT112",
+          "name": "Laboratorio de Introducción a las Redes",
+          "credits": 0,
+          "req": [],
+          "additional": [
+            "ITT112"
+          ],
+          "gate": null
+        },
+        {
+          "id": "017114",
+          "code": "ICC103",
+          "name": "Fundamentos de Programación",
+          "credits": 4,
+          "req": [
+            "ICC101"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "008568",
+          "code": "LET102",
+          "name": "Español II",
+          "credits": 4,
+          "req": [
+            "LET101"
+          ],
+          "additional": [],
+          "gate": null
+        }
+      ],
+      "groups": [
+        "HG-E01-T"
+      ],
+      "baseCredits": 20
+    },
+    {
+      "id": "y1p3",
+      "year": 1,
+      "term": 3,
+      "label": "Año 1 · Período 3",
+      "courses": [
+        {
+          "id": "009220",
+          "code": "MAT130",
+          "name": "Álgebra Lineal",
+          "credits": 3,
+          "req": [
+            "MAT119",
+            "MAT311"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "009226",
+          "code": "MAT139",
+          "name": "Cálculo Integral",
+          "credits": 4,
+          "req": [
+            "MAT129"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "005958",
+          "code": "FIS139",
+          "name": "Mecánica Newtoniana",
+          "credits": 4,
+          "req": [
+            "MAT129"
+          ],
+          "additional": [
+            "1FIS139"
+          ],
+          "gate": null
+        },
+        {
+          "id": "005959",
+          "code": "1FIS139",
+          "name": "Laboratorio de Mecánica Newtoniana",
+          "credits": 0,
+          "req": [
+            "MAT129"
+          ],
+          "additional": [
+            "FIS139"
+          ],
+          "gate": null
+        },
+        {
+          "id": "017154",
+          "code": "ITT113",
+          "name": "Conmutación y Enrutamiento Básico",
+          "credits": 3,
+          "req": [
+            "1ITT112",
+            "ITT112"
+          ],
+          "additional": [
+            "1ITT113"
+          ],
+          "gate": null
+        },
+        {
+          "id": "017155",
+          "code": "1ITT113",
+          "name": "Laboratorio de Conmutación y Enrutamiento Básico",
+          "credits": 0,
+          "req": [
+            "1ITT112",
+            "ITT112"
+          ],
+          "additional": [
+            "ITT113"
+          ],
+          "gate": null
+        }
+      ],
+      "groups": [
+        "ART-E01-T",
+        "LIT-E01-T"
+      ],
+      "baseCredits": 20
+    },
+    {
+      "id": "y2p1",
+      "year": 2,
+      "term": 1,
+      "label": "Año 2 · Período 1",
+      "courses": [
+        {
+          "id": "009264",
+          "code": "MAT219",
+          "name": "Cálculo Vectorial",
+          "credits": 4,
+          "req": [
+            "MAT139"
+          ],
+          "additional": [
+            "MAT130"
+          ],
+          "gate": null
+        },
+        {
+          "id": "005984",
+          "code": "FIS219",
+          "name": "Electricidad y Magnetismo",
+          "credits": 4,
+          "req": [
+            "1FIS139",
+            "FIS139"
+          ],
+          "additional": [
+            "1FIS219",
+            "MAT219"
+          ],
+          "gate": null
+        },
+        {
+          "id": "005986",
+          "code": "1FIS219",
+          "name": "Laboratorio de Electricidad y Magnetismo",
+          "credits": 0,
+          "req": [
+            "1FIS139",
+            "FIS139"
+          ],
+          "additional": [
+            "FIS219",
+            "MAT219"
+          ],
+          "gate": null
+        },
+        {
+          "id": "017301",
+          "code": "ITT241",
+          "name": "Sistemas Digitales",
+          "credits": 3,
+          "req": [
+            "ICC103"
+          ],
+          "additional": [
+            "1ITT241"
+          ],
+          "gate": null
+        },
+        {
+          "id": "017302",
+          "code": "1ITT241",
+          "name": "Laboratorio de Sistemas Digitales",
+          "credits": 1,
+          "req": [
+            "ICC103"
+          ],
+          "additional": [
+            "ITT241"
+          ],
+          "gate": null
+        },
+        {
+          "id": "017144",
+          "code": "ICC104",
+          "name": "Programación Orientada a Objetos",
+          "credits": 4,
+          "req": [
+            "ICC103"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "007315",
+          "code": "ILE205",
+          "name": "Inglés I",
+          "credits": 4,
+          "req": [
+            "ILE203"
+          ],
+          "additional": [],
+          "gate": null
+        }
+      ],
+      "groups": [],
+      "baseCredits": 20
+    },
+    {
+      "id": "y2p2",
+      "year": 2,
+      "term": 2,
+      "label": "Año 2 · Período 2",
+      "courses": [
+        {
+          "id": "009272",
+          "code": "MAT229",
+          "name": "Ecuaciones Diferenciales",
+          "credits": 4,
+          "req": [
+            "MAT219"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "006779",
+          "code": "IEL211",
+          "name": "Circuitos Eléctricos I",
+          "credits": 3,
+          "req": [
+            "MAT139"
+          ],
+          "additional": [
+            "1FIS219",
+            "1IEL211",
+            "FIS219"
+          ],
+          "gate": null
+        },
+        {
+          "id": "006780",
+          "code": "1IEL211",
+          "name": "Laboratorio de Circuitos Eléctricos I",
+          "credits": 1,
+          "req": [
+            "MAT139"
+          ],
+          "additional": [
+            "1FIS219",
+            "FIS219",
+            "IEL211"
+          ],
+          "gate": null
+        },
+        {
+          "id": "005992",
+          "code": "FIS229",
+          "name": "Ondas, Fluidos y Termodinámica",
+          "credits": 4,
+          "req": [
+            "1FIS139",
+            "FIS139"
+          ],
+          "additional": [
+            "1FIS229",
+            "MAT229"
+          ],
+          "gate": null
+        },
+        {
+          "id": "005994",
+          "code": "1FIS229",
+          "name": "Laboratorio de Ondas, Fluidos y Termodinámica",
+          "credits": 0,
+          "req": [
+            "1FIS139",
+            "FIS139"
+          ],
+          "additional": [
+            "FIS229",
+            "MAT229"
+          ],
+          "gate": null
+        },
+        {
+          "id": "017145",
+          "code": "ICC211",
+          "name": "Algoritmos Clásicos y Estructuras de Datos",
+          "credits": 4,
+          "req": [
+            "ICC104"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "007318",
+          "code": "ILE303",
+          "name": "Inglés II",
+          "credits": 4,
+          "req": [
+            "ILE205"
+          ],
+          "additional": [],
+          "gate": null
+        }
+      ],
+      "groups": [],
+      "baseCredits": 20
+    },
+    {
+      "id": "y2p3",
+      "year": 2,
+      "term": 3,
+      "label": "Año 2 · Período 3",
+      "courses": [
+        {
+          "id": "017158",
+          "code": "ITT213",
+          "name": "Conmutación y Enrutamiento Avanzado",
+          "credits": 3,
+          "req": [
+            "1ITT113",
+            "ITT113"
+          ],
+          "additional": [
+            "1ITT213"
+          ],
+          "gate": null
+        },
+        {
+          "id": "017159",
+          "code": "1ITT213",
+          "name": "Laboratorio de Conmutación y Enrutamiento Avanzado",
+          "credits": 0,
+          "req": [
+            "1ITT113",
+            "ITT113"
+          ],
+          "additional": [
+            "ITT213"
+          ],
+          "gate": null
+        },
+        {
+          "id": "017147",
+          "code": "ICC223",
+          "name": "Bases de Datos",
+          "credits": 4,
+          "req": [
+            "ICC104"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "007319",
+          "code": "ILE305",
+          "name": "Inglés III",
+          "credits": 4,
+          "req": [
+            "ILE303"
+          ],
+          "additional": [],
+          "gate": null
+        }
+      ],
+      "groups": [
+        "HG-E02-T",
+        "CHU-E01-T",
+        "CN-E01-T",
+        "CN-E01-P"
+      ],
+      "baseCredits": 20
+    },
+    {
+      "id": "y3p1",
+      "year": 3,
+      "term": 1,
+      "label": "Año 3 · Período 1",
+      "courses": [
+        {
+          "id": "006783",
+          "code": "IEL222",
+          "name": "Electrónica I",
+          "credits": 3,
+          "req": [
+            "1IEL211",
+            "IEL211"
+          ],
+          "additional": [
+            "1IEL222"
+          ],
+          "gate": null
+        },
+        {
+          "id": "006784",
+          "code": "1IEL222",
+          "name": "Laboratorio de Electrónica I",
+          "credits": 1,
+          "req": [
+            "1IEL211",
+            "IEL211"
+          ],
+          "additional": [
+            "IEL222"
+          ],
+          "gate": null
+        },
+        {
+          "id": "017450",
+          "code": "ITT351",
+          "name": "Electromagnetismo",
+          "credits": 3,
+          "req": [
+            "1FIS219",
+            "FIS219"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017303",
+          "code": "ITT321",
+          "name": "Ingeniería de Tráfico",
+          "credits": 2,
+          "req": [
+            "1ITT213",
+            "ITT213"
+          ],
+          "additional": [
+            "1ITT321"
+          ],
+          "gate": null
+        },
+        {
+          "id": "017304",
+          "code": "1ITT321",
+          "name": "Laboratorio de Ingeniería de Tráfico",
+          "credits": 0,
+          "req": [
+            "1ITT213",
+            "ITT213"
+          ],
+          "additional": [
+            "ITT321"
+          ],
+          "gate": null
+        },
+        {
+          "id": "017451",
+          "code": "ITT311",
+          "name": "Teoría de Código",
+          "credits": 3,
+          "req": [
+            "1ITT241",
+            "ITT241"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017307",
+          "code": "ITT344",
+          "name": "Sistemas Embebidos",
+          "credits": 3,
+          "req": [
+            "1ITT241",
+            "ICC103",
+            "ITT241"
+          ],
+          "additional": [
+            "1ITT344"
+          ],
+          "gate": null
+        },
+        {
+          "id": "017306",
+          "code": "1ITT344",
+          "name": "Laboratorio de Sistemas Embebidos",
+          "credits": 1,
+          "req": [
+            "1ITT241",
+            "ICC103",
+            "ITT241"
+          ],
+          "additional": [
+            "ITT344"
+          ],
+          "gate": null
+        },
+        {
+          "id": "007330",
+          "code": "ILE498",
+          "name": "Inglés para las Ingenierías",
+          "credits": 4,
+          "req": [
+            "ILE305",
+            "ILE311",
+            "ILE322"
+          ],
+          "additional": [],
+          "gate": null
+        }
+      ],
+      "groups": [],
+      "baseCredits": 20
+    },
+    {
+      "id": "y3p2",
+      "year": 3,
+      "term": 2,
+      "label": "Año 3 · Período 2",
+      "courses": [
+        {
+          "id": "007247",
+          "code": "IIS223",
+          "name": "Probabilidad y Estadística para Ingeniería",
+          "credits": 4,
+          "req": [
+            "MAT139"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017308",
+          "code": "ITT331",
+          "name": "Señales y Sistemas",
+          "credits": 3,
+          "req": [
+            "MAT229"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017309",
+          "code": "ITT324",
+          "name": "Comunicaciones Aplicadas",
+          "credits": 3,
+          "req": [
+            "1IEL222",
+            "IEL222",
+            "ITT122"
+          ],
+          "additional": [
+            "1ITT324"
+          ],
+          "gate": null
+        },
+        {
+          "id": "017310",
+          "code": "1ITT324",
+          "name": "Laboratorio de Comunicaciones Aplicadas",
+          "credits": 1,
+          "req": [
+            "1IEL222",
+            "IEL222",
+            "ITT122"
+          ],
+          "additional": [
+            "ITT324"
+          ],
+          "gate": null
+        },
+        {
+          "id": "017311",
+          "code": "ITT312",
+          "name": "Tecnologías de Transmisión",
+          "credits": 3,
+          "req": [
+            "1ITT112",
+            "ITT112"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017312",
+          "code": "ITT314",
+          "name": "Redes Convergentes",
+          "credits": 3,
+          "req": [
+            "1ITT213",
+            "ITT213"
+          ],
+          "additional": [
+            "1ITT314"
+          ],
+          "gate": null
+        },
+        {
+          "id": "017313",
+          "code": "1ITT314",
+          "name": "Laboratorio de Redes Convergentes",
+          "credits": 0,
+          "req": [
+            "1ITT213",
+            "ITT213"
+          ],
+          "additional": [
+            "ITT314"
+          ],
+          "gate": null
+        },
+        {
+          "id": "017314",
+          "code": "ITT315",
+          "name": "Seguridad de Redes",
+          "credits": 3,
+          "req": [
+            "1ITT113",
+            "ITT113",
+            "ITT311"
+          ],
+          "additional": [
+            "1ITT315"
+          ],
+          "gate": null
+        },
+        {
+          "id": "017315",
+          "code": "1ITT315",
+          "name": "Laboratorio de Seguridad de Redes",
+          "credits": 0,
+          "req": [
+            "1ITT113",
+            "ITT113",
+            "ITT311"
+          ],
+          "additional": [
+            "ITT315"
+          ],
+          "gate": null
+        }
+      ],
+      "groups": [],
+      "baseCredits": 20
+    },
+    {
+      "id": "y3p3",
+      "year": 3,
+      "term": 3,
+      "label": "Año 3 · Período 3",
+      "courses": [
+        {
+          "id": "007276",
+          "code": "IIS432",
+          "name": "Ingeniería Económica",
+          "credits": 3,
+          "req": [
+            "IIS223"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017453",
+          "code": "ITT339",
+          "name": "Procesos Estocásticos",
+          "credits": 3,
+          "req": [
+            "IIS223"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017305",
+          "code": "ITT355",
+          "name": "Propagación de Ondas y Antenas",
+          "credits": 3,
+          "req": [
+            "1FIS229",
+            "FIS229",
+            "ITT351"
+          ],
+          "additional": [
+            "1ITT355"
+          ],
+          "gate": null
+        },
+        {
+          "id": "017318",
+          "code": "1ITT355",
+          "name": "Laboratorio de Propagación de Ondas y Antenas",
+          "credits": 0,
+          "req": [
+            "1FIS229",
+            "FIS229",
+            "ITT351"
+          ],
+          "additional": [
+            "ITT355"
+          ],
+          "gate": null
+        },
+        {
+          "id": "017319",
+          "code": "ITT316",
+          "name": "Diseño de Redes",
+          "credits": 3,
+          "req": [
+            "1ITT314",
+            "1ITT315",
+            "ITT314",
+            "ITT315"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017320",
+          "code": "1ITT363",
+          "name": "Proyecto Integrador ITT",
+          "credits": 2,
+          "req": [
+            "1ITT324",
+            "1ITT344",
+            "ITT324",
+            "ITT344"
+          ],
+          "additional": [],
+          "gate": null
+        }
+      ],
+      "groups": [],
+      "baseCredits": 14
+    },
+    {
+      "id": "y4p1",
+      "year": 4,
+      "term": 1,
+      "label": "Año 4 · Período 1",
+      "courses": [
+        {
+          "id": "017321",
+          "code": "ITT431",
+          "name": "Comunicaciones Digitales",
+          "credits": 4,
+          "req": [
+            "ITT331",
+            "ITT339"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017454",
+          "code": "ITT424",
+          "name": "Sistemas de Telecomunicaciones",
+          "credits": 3,
+          "req": [
+            "ITT312"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017322",
+          "code": "ITT413",
+          "name": "Automatización de Redes",
+          "credits": 3,
+          "req": [
+            "ITT316"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017323",
+          "code": "1ITT465",
+          "name": "Elaboración de Proyectos",
+          "credits": 1,
+          "req": [
+            "1ITT363"
+          ],
+          "additional": [],
+          "gate": {
+            "percent": 70,
+            "label": "Haber completado al menos el 70 % del plan"
+          }
+        }
+      ],
+      "groups": [
+        "ITT-E01-T"
+      ],
+      "baseCredits": 14
+    },
+    {
+      "id": "y4p2",
+      "year": 4,
+      "term": 2,
+      "label": "Año 4 · Período 2",
+      "courses": [
+        {
+          "id": "017316",
+          "code": "ITT456",
+          "name": "Redes Móviles",
+          "credits": 3,
+          "req": [
+            "1ITT324",
+            "1ITT355",
+            "ITT324",
+            "ITT355",
+            "ITT424",
+            "ITT431"
+          ],
+          "additional": [
+            "1ITT456"
+          ],
+          "gate": null
+        },
+        {
+          "id": "017325",
+          "code": "1ITT456",
+          "name": "Laboratorio de Redes Móviles",
+          "credits": 0,
+          "req": [
+            "1ITT324",
+            "1ITT355",
+            "ITT324",
+            "ITT355",
+            "ITT424",
+            "ITT431"
+          ],
+          "additional": [
+            "ITT456"
+          ],
+          "gate": null
+        },
+        {
+          "id": "017326",
+          "code": "1ITT466",
+          "name": "Anteproyecto de Grado ITT",
+          "credits": 1,
+          "req": [
+            "1ITT465"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "005859",
+          "code": "FIL363",
+          "name": "Ética de las Profesiones ARQ/ING",
+          "credits": 3,
+          "req": [],
+          "additional": [],
+          "gate": {
+            "percent": 70,
+            "label": "Haber completado al menos el 70 % del plan"
+          }
+        }
+      ],
+      "groups": [
+        "ITT-E02-T",
+        "ET-E21-T"
+      ],
+      "baseCredits": 12
+    },
+    {
+      "id": "y4p3",
+      "year": 4,
+      "term": 3,
+      "label": "Año 4 · Período 3",
+      "courses": [
+        {
+          "id": "017327",
+          "code": "ITT429",
+          "name": "Regulaciones de Datos y Telecomunicaciones",
+          "credits": 2,
+          "req": [],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017328",
+          "code": "ITT415",
+          "name": "Centro de Datos",
+          "credits": 3,
+          "req": [
+            "ITT316"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017329",
+          "code": "1ITT467",
+          "name": "Proyecto de Grado ITT",
+          "credits": 2,
+          "req": [
+            "1ITT466"
+          ],
+          "additional": [],
+          "gate": null
+        }
+      ],
+      "groups": [
+        "ITT-E03-T",
+        "ET-E22-T"
+      ],
+      "baseCredits": 12
+    }
+  ],
+  "groups": [
+    {
+      "id": "DEP-E01-P",
+      "name": "Electiva de Deporte",
+      "minCourses": 1,
+      "minCredits": 1,
+      "options": [
+        {
+          "id": "002923",
+          "code": "1DEP102",
+          "name": "Fútbol",
+          "credits": 1,
+          "req": [],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "002927",
+          "code": "1DEP105",
+          "name": "Volibol Masculino",
+          "credits": 1,
+          "req": [],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "002928",
+          "code": "1DEP106",
+          "name": "Volibol Femenino",
+          "credits": 1,
+          "req": [],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "002932",
+          "code": "1DEP108",
+          "name": "Baloncesto Masculino",
+          "credits": 1,
+          "req": [],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "002935",
+          "code": "1DEP110",
+          "name": "Béisbol",
+          "credits": 1,
+          "req": [],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "002942",
+          "code": "1DEP114",
+          "name": "Tenis de Mesa",
+          "credits": 1,
+          "req": [],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "002925",
+          "code": "1DEP104",
+          "name": "Natación",
+          "credits": 1,
+          "req": [],
+          "additional": [],
+          "gate": null
+        }
+      ]
+    },
+    {
+      "id": "FIL-E11-T",
+      "name": "Electiva de Filosofía",
+      "minCourses": 1,
+      "minCredits": 4,
+      "options": [
+        {
+          "id": "005799",
+          "code": "FIL113",
+          "name": "Masculinidad hegemónica y violencia de género",
+          "credits": 4,
+          "req": [],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "005804",
+          "code": "FIL117",
+          "name": "Ecofilosofía: ser humano y naturaleza",
+          "credits": 4,
+          "req": [],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017162",
+          "code": "FIL111",
+          "name": "Sócrates, Buda y Confucio",
+          "credits": 4,
+          "req": [],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017163",
+          "code": "FIL114",
+          "name": "Dialogando con Platón",
+          "credits": 4,
+          "req": [],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017651",
+          "code": "ESG116",
+          "name": "Teorías de la experiencia estética",
+          "credits": 4,
+          "req": [],
+          "additional": [],
+          "gate": null
+        }
+      ]
+    },
+    {
+      "id": "HG-E01-T",
+      "name": "Electiva de Historia y Sociedad Mundial",
+      "minCourses": 1,
+      "minCredits": 3,
+      "options": [
+        {
+          "id": "006231",
+          "code": "HG107",
+          "name": "Papas en Occidente moderno y contemporáneo",
+          "credits": 3,
+          "req": [],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "006233",
+          "code": "HG109",
+          "name": "Revoluciones en Occidente moderno y contemporáneo",
+          "credits": 3,
+          "req": [],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017652",
+          "code": "ESG104",
+          "name": "Una Historia de Derechos Humanos",
+          "credits": 3,
+          "req": [],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "019153",
+          "code": "ESG123",
+          "name": "Cultura de Paz y Resolución de Conflictos",
+          "credits": 3,
+          "req": [],
+          "additional": [],
+          "gate": null
+        }
+      ]
+    },
+    {
+      "id": "ART-E01-T",
+      "name": "Electiva de Arte",
+      "minCourses": 1,
+      "minCredits": 2,
+      "options": [
+        {
+          "id": "001808",
+          "code": "ART107",
+          "name": "Llanto y Risa en el Teatro",
+          "credits": 2,
+          "req": [],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "001820",
+          "code": "ART116",
+          "name": "Danza Popular Dominicana",
+          "credits": 2,
+          "req": [],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017160",
+          "code": "ART138",
+          "name": "Las Patologías en la Historia del Arte",
+          "credits": 2,
+          "req": [],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017161",
+          "code": "ART139",
+          "name": "Sociedad y Cultura Carnavalesca",
+          "credits": 2,
+          "req": [],
+          "additional": [],
+          "gate": null
+        }
+      ]
+    },
+    {
+      "id": "LIT-E01-T",
+      "name": "Electiva de Literatura",
+      "minCourses": 1,
+      "minCredits": 4,
+      "options": [
+        {
+          "id": "008593",
+          "code": "LET126",
+          "name": "Literatura y Cine",
+          "credits": 4,
+          "req": [],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "008595",
+          "code": "LET128",
+          "name": "Realismo Mágico y Literatura Fantástica",
+          "credits": 4,
+          "req": [],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017179",
+          "code": "LET132",
+          "name": "Novela Histórica: Realidad y Ficción",
+          "credits": 4,
+          "req": [],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017164",
+          "code": "LET129",
+          "name": "Literatura: Violencia y Paz",
+          "credits": 4,
+          "req": [],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017165",
+          "code": "LET131",
+          "name": "El Amor en la Poesía",
+          "credits": 4,
+          "req": [],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017650",
+          "code": "ESG103",
+          "name": "Escritura Creativa",
+          "credits": 4,
+          "req": [],
+          "additional": [],
+          "gate": null
+        }
+      ]
+    },
+    {
+      "id": "HG-E02-T",
+      "name": "Electiva de Historia y Sociedad Dominicana",
+      "minCourses": 1,
+      "minCredits": 3,
+      "options": [
+        {
+          "id": "006230",
+          "code": "HG106",
+          "name": "Proceso y retos de la democracia dominicana",
+          "credits": 3,
+          "req": [],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "006232",
+          "code": "HG108",
+          "name": "Caudillismo y cultura política autoritaria",
+          "credits": 3,
+          "req": [],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017140",
+          "code": "HG117",
+          "name": "La Argumentación y el Discurso Político",
+          "credits": 3,
+          "req": [],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "019152",
+          "code": "ESG122",
+          "name": "Historia de la Cultura Dominicana",
+          "credits": 3,
+          "req": [],
+          "additional": [],
+          "gate": null
+        }
+      ]
+    },
+    {
+      "id": "CHU-E01-T",
+      "name": "Electiva de Ciencia y Humanismo",
+      "minCourses": 1,
+      "minCredits": 2,
+      "options": [
+        {
+          "id": "002101",
+          "code": "CHU106",
+          "name": "Humanos Diseñados: Ingeniería Genética",
+          "credits": 2,
+          "req": [],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "002102",
+          "code": "CHU107",
+          "name": "Preguntas Fundamentales de la Existencia Humana",
+          "credits": 2,
+          "req": [],
+          "additional": [],
+          "gate": null
+        }
+      ]
+    },
+    {
+      "id": "CN-E01-T",
+      "name": "Electiva de Ciencia Ambiental",
+      "minCourses": 1,
+      "minCredits": 3,
+      "options": [
+        {
+          "id": "002147",
+          "code": "CN112",
+          "name": "Cambio Climático y Gestión Ambiental",
+          "credits": 3,
+          "req": [],
+          "additional": [],
+          "gate": null,
+          "lab": "1CN112"
+        },
+        {
+          "id": "002149",
+          "code": "CN114",
+          "name": "La Huella Ecológica",
+          "credits": 3,
+          "req": [],
+          "additional": [],
+          "gate": null,
+          "lab": "1CN114"
+        },
+        {
+          "id": "016807",
+          "code": "CN113",
+          "name": "Ciencias Ambientales y Desarrollo Sostenible",
+          "credits": 3,
+          "req": [],
+          "additional": [],
+          "gate": null,
+          "lab": "1CN113"
+        },
+        {
+          "id": "016825",
+          "code": "CN216",
+          "name": "Ecología, Salud y Medio Ambiente",
+          "credits": 3,
+          "req": [],
+          "additional": [],
+          "gate": null,
+          "lab": "1CN216"
+        },
+        {
+          "id": "017653",
+          "code": "ESG115",
+          "name": "Océanos y Sostenibilidad",
+          "credits": 3,
+          "req": [],
+          "additional": [],
+          "gate": null,
+          "lab": "1ESG115"
+        }
+      ]
+    },
+    {
+      "id": "CN-E01-P",
+      "name": "Laboratorio de Electiva de Ciencia Ambiental",
+      "minCourses": 1,
+      "minCredits": 1,
+      "linkedTo": "CN-E01-T",
+      "labGroup": true,
+      "options": [
+        {
+          "id": "002148",
+          "code": "1CN112",
+          "name": "Laboratorio de Cambio Climático y Gestión Ambiental",
+          "credits": 1,
+          "req": [
+            "CN112"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "002150",
+          "code": "1CN114",
+          "name": "Laboratorio de La Huella Ecológica",
+          "credits": 1,
+          "req": [
+            "CN114"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "016809",
+          "code": "1CN113",
+          "name": "Laboratorio de Ciencias Ambientales y Desarrollo Sostenible",
+          "credits": 1,
+          "req": [
+            "CN113"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "016826",
+          "code": "1CN216",
+          "name": "Laboratorio de Ecología, Salud y Medio Ambiente",
+          "credits": 1,
+          "req": [
+            "CN216"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017654",
+          "code": "1ESG115",
+          "name": "Laboratorio de Océanos y Sostenibilidad",
+          "credits": 1,
+          "req": [
+            "ESG115"
+          ],
+          "additional": [],
+          "gate": null
+        }
+      ]
+    },
+    {
+      "id": "ITT-E01-T",
+      "name": "Electiva Profesional I de Telemática",
+      "minCourses": 1,
+      "minCredits": 3,
+      "uniqueAcross": [
+        "ITT-E01-T",
+        "ITT-E02-T",
+        "ITT-E03-T"
+      ],
+      "options": [
+        {
+          "id": "000768",
+          "code": "ADM407",
+          "name": "Emprendimiento",
+          "credits": 3,
+          "req": [],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017458",
+          "code": "ICC224",
+          "name": "Base de Datos No Relacionales",
+          "credits": 3,
+          "req": [
+            "ICC223"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017149",
+          "code": "ICC331",
+          "name": "Sistemas Operativos",
+          "credits": 4,
+          "req": [
+            "ICC133",
+            "ITT344"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017181",
+          "code": "ICC352",
+          "name": "Programación Web",
+          "credits": 4,
+          "req": [
+            "1ITT102",
+            "1ITT112",
+            "ICC104",
+            "ICC223",
+            "ITT102",
+            "ITT112"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017182",
+          "code": "ICC362",
+          "name": "Introducción a la Inteligencia Artificial",
+          "credits": 4,
+          "req": [
+            "ICC104",
+            "IIS223",
+            "MAT130",
+            "MAT134"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017459",
+          "code": "ITT401",
+          "name": "Sistemas Operativos de Tiempo Real",
+          "credits": 3,
+          "req": [
+            "1ITT344",
+            "ITT344"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017460",
+          "code": "ITT402",
+          "name": "Administración de Sistemas",
+          "credits": 3,
+          "req": [
+            "1ITT213",
+            "ICC223",
+            "ITT213"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017468",
+          "code": "ITT403",
+          "name": "Hacking Ético",
+          "credits": 3,
+          "req": [
+            "1ITT315",
+            "ITT315"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017462",
+          "code": "ITT405",
+          "name": "Tecnologías Emergentes",
+          "credits": 3,
+          "req": [
+            "ITT316"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017463",
+          "code": "ITT406",
+          "name": "Seguridad Avanzada de Redes",
+          "credits": 3,
+          "req": [
+            "1ITT315",
+            "ITT315"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "018378",
+          "code": "ITT407",
+          "name": "Ciberinteligencia y Fuentes Abiertas",
+          "credits": 3,
+          "req": [
+            "1ITT315",
+            "ITT315"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "019184",
+          "code": "ITT414",
+          "name": "Redes de Fibra Óptica",
+          "credits": 3,
+          "req": [
+            "ITT316"
+          ],
+          "additional": [
+            "ITT424"
+          ],
+          "gate": null
+        },
+        {
+          "id": "019185",
+          "code": "ITT416",
+          "name": "Redes GPON Avanzado I",
+          "credits": 3,
+          "req": [
+            "ITT414"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "019186",
+          "code": "ITT417",
+          "name": "Redes GPON Avanzado II",
+          "credits": 3,
+          "req": [
+            "ITT416"
+          ],
+          "additional": [],
+          "gate": null
+        }
+      ]
+    },
+    {
+      "id": "ITT-E02-T",
+      "name": "Electiva Profesional II de Telemática",
+      "minCourses": 1,
+      "minCredits": 3,
+      "uniqueAcross": [
+        "ITT-E01-T",
+        "ITT-E02-T",
+        "ITT-E03-T"
+      ],
+      "options": [
+        {
+          "id": "000768",
+          "code": "ADM407",
+          "name": "Emprendimiento",
+          "credits": 3,
+          "req": [],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017458",
+          "code": "ICC224",
+          "name": "Base de Datos No Relacionales",
+          "credits": 3,
+          "req": [
+            "ICC223"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017149",
+          "code": "ICC331",
+          "name": "Sistemas Operativos",
+          "credits": 4,
+          "req": [
+            "ICC133",
+            "ITT344"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017181",
+          "code": "ICC352",
+          "name": "Programación Web",
+          "credits": 4,
+          "req": [
+            "1ITT102",
+            "1ITT112",
+            "ICC104",
+            "ICC223",
+            "ITT102",
+            "ITT112"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017182",
+          "code": "ICC362",
+          "name": "Introducción a la Inteligencia Artificial",
+          "credits": 4,
+          "req": [
+            "ICC104",
+            "IIS223",
+            "MAT130",
+            "MAT134"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017459",
+          "code": "ITT401",
+          "name": "Sistemas Operativos de Tiempo Real",
+          "credits": 3,
+          "req": [
+            "1ITT344",
+            "ITT344"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017460",
+          "code": "ITT402",
+          "name": "Administración de Sistemas",
+          "credits": 3,
+          "req": [
+            "1ITT213",
+            "ICC223",
+            "ITT213"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017468",
+          "code": "ITT403",
+          "name": "Hacking Ético",
+          "credits": 3,
+          "req": [
+            "1ITT315",
+            "ITT315"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017462",
+          "code": "ITT405",
+          "name": "Tecnologías Emergentes",
+          "credits": 3,
+          "req": [
+            "ITT316"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017463",
+          "code": "ITT406",
+          "name": "Seguridad Avanzada de Redes",
+          "credits": 3,
+          "req": [
+            "1ITT315",
+            "ITT315"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "018378",
+          "code": "ITT407",
+          "name": "Ciberinteligencia y Fuentes Abiertas",
+          "credits": 3,
+          "req": [
+            "1ITT315",
+            "ITT315"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "019184",
+          "code": "ITT414",
+          "name": "Redes de Fibra Óptica",
+          "credits": 3,
+          "req": [
+            "ITT316"
+          ],
+          "additional": [
+            "ITT424"
+          ],
+          "gate": null
+        },
+        {
+          "id": "019185",
+          "code": "ITT416",
+          "name": "Redes GPON Avanzado I",
+          "credits": 3,
+          "req": [
+            "ITT414"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "019186",
+          "code": "ITT417",
+          "name": "Redes GPON Avanzado II",
+          "credits": 3,
+          "req": [
+            "ITT416"
+          ],
+          "additional": [],
+          "gate": null
+        }
+      ]
+    },
+    {
+      "id": "ITT-E03-T",
+      "name": "Electiva Profesional III de Telemática",
+      "minCourses": 1,
+      "minCredits": 3,
+      "uniqueAcross": [
+        "ITT-E01-T",
+        "ITT-E02-T",
+        "ITT-E03-T"
+      ],
+      "options": [
+        {
+          "id": "000768",
+          "code": "ADM407",
+          "name": "Emprendimiento",
+          "credits": 3,
+          "req": [],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017458",
+          "code": "ICC224",
+          "name": "Base de Datos No Relacionales",
+          "credits": 3,
+          "req": [
+            "ICC223"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017149",
+          "code": "ICC331",
+          "name": "Sistemas Operativos",
+          "credits": 4,
+          "req": [
+            "ICC133",
+            "ITT344"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017181",
+          "code": "ICC352",
+          "name": "Programación Web",
+          "credits": 4,
+          "req": [
+            "1ITT102",
+            "1ITT112",
+            "ICC104",
+            "ICC223",
+            "ITT102",
+            "ITT112"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017182",
+          "code": "ICC362",
+          "name": "Introducción a la Inteligencia Artificial",
+          "credits": 4,
+          "req": [
+            "ICC104",
+            "IIS223",
+            "MAT130",
+            "MAT134"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017459",
+          "code": "ITT401",
+          "name": "Sistemas Operativos de Tiempo Real",
+          "credits": 3,
+          "req": [
+            "1ITT344",
+            "ITT344"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017460",
+          "code": "ITT402",
+          "name": "Administración de Sistemas",
+          "credits": 3,
+          "req": [
+            "1ITT213",
+            "ICC223",
+            "ITT213"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017468",
+          "code": "ITT403",
+          "name": "Hacking Ético",
+          "credits": 3,
+          "req": [
+            "1ITT315",
+            "ITT315"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017462",
+          "code": "ITT405",
+          "name": "Tecnologías Emergentes",
+          "credits": 3,
+          "req": [
+            "ITT316"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "017463",
+          "code": "ITT406",
+          "name": "Seguridad Avanzada de Redes",
+          "credits": 3,
+          "req": [
+            "1ITT315",
+            "ITT315"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "018378",
+          "code": "ITT407",
+          "name": "Ciberinteligencia y Fuentes Abiertas",
+          "credits": 3,
+          "req": [
+            "1ITT315",
+            "ITT315"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "019184",
+          "code": "ITT414",
+          "name": "Redes de Fibra Óptica",
+          "credits": 3,
+          "req": [
+            "ITT316"
+          ],
+          "additional": [
+            "ITT424"
+          ],
+          "gate": null
+        },
+        {
+          "id": "019185",
+          "code": "ITT416",
+          "name": "Redes GPON Avanzado I",
+          "credits": 3,
+          "req": [
+            "ITT414"
+          ],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "019186",
+          "code": "ITT417",
+          "name": "Redes GPON Avanzado II",
+          "credits": 3,
+          "req": [
+            "ITT416"
+          ],
+          "additional": [],
+          "gate": null
+        }
+      ]
+    },
+    {
+      "id": "ET-E21-T",
+      "name": "Electiva I de Estudios Teológicos",
+      "minCourses": 1,
+      "minCredits": 2,
+      "options": [
+        {
+          "id": "005650",
+          "code": "ET207",
+          "name": "Antiguo y Nuevo Testamento",
+          "credits": 2,
+          "req": [],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "005651",
+          "code": "ET208",
+          "name": "Cristianismo y Compromiso Social",
+          "credits": 2,
+          "req": [],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "005670",
+          "code": "ET225",
+          "name": "Matrimonio Sacramental",
+          "credits": 2,
+          "req": [],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "005672",
+          "code": "ET227",
+          "name": "Arte Sacro",
+          "credits": 2,
+          "req": [],
+          "additional": [],
+          "gate": null
+        }
+      ]
+    },
+    {
+      "id": "ET-E22-T",
+      "name": "Electiva II de Estudios Teológicos",
+      "minCourses": 1,
+      "minCredits": 2,
+      "options": [
+        {
+          "id": "005674",
+          "code": "ET229",
+          "name": "Jesús: Persona y Enseñanza",
+          "credits": 2,
+          "req": [],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "005677",
+          "code": "ET231",
+          "name": "La Iglesia en la Actualidad",
+          "credits": 2,
+          "req": [],
+          "additional": [],
+          "gate": null
+        },
+        {
+          "id": "005678",
+          "code": "ET232",
+          "name": "Visión Cristiana del Hombre",
+          "credits": 2,
+          "req": [],
+          "additional": [],
+          "gate": null
+        }
+      ]
+    }
+  ],
+  "totalCredits": 212,
+  "externalRequirements": [
+    "1ITT102",
+    "ICC133",
+    "ILE203",
+    "ILE311",
+    "ILE322",
+    "ITT102",
+    "MAT134",
+    "MAT311"
+  ],
+  "fixedCredits": 176,
+  "electiveMinimumCredits": 36
+}
