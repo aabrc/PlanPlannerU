@@ -4,9 +4,14 @@ export const STORAGE_KEY = "itt2020_pensum_tracker_v2";
 
 const AUTO_COMPLETED_EXTERNAL = ["MAT311", "ILE203"];
 
-function normalizeScheduleView(saved?: { start?: number; end?: number }): { start: number; end: number } {
+function normalizeScheduleView(saved?: {
+  start?: number;
+  end?: number;
+  lastVisibleDay?: number;
+}): { start: number; end: number; lastVisibleDay: number } {
   const savedStart = saved?.start;
   const savedEnd = saved?.end;
+  const savedLastDay = saved?.lastVisibleDay;
 
   const start =
     typeof savedStart === "number" &&
@@ -24,9 +29,16 @@ function normalizeScheduleView(saved?: { start?: number; end?: number }): { star
     savedEnd % 30 === 0
       ? savedEnd
       : 1440;
+  const lastVisibleDay =
+    typeof savedLastDay === "number" &&
+    Number.isInteger(savedLastDay) &&
+    savedLastDay >= 0 &&
+    savedLastDay <= 6
+      ? savedLastDay
+      : 6;
 
-  if (end <= start) return { start: 0, end: 1440 };
-  return { start, end };
+  if (end <= start) return { start: 0, end: 1440, lastVisibleDay };
+  return { start, end, lastVisibleDay };
 }
 
 function blankState(externalCodes: string[]): PlannerState {
@@ -38,7 +50,7 @@ function blankState(externalCodes: string[]): PlannerState {
     selections: {},
     externalDone,
     scheduleEvents: [],
-    scheduleView: { start: 0, end: 1440 },
+    scheduleView: { start: 0, end: 1440, lastVisibleDay: 6 },
     gradeAttempts: [],
     meta: { currentPeriod: "", loadPerTerm: "15", gpa: "", internship: 0 }
   };
