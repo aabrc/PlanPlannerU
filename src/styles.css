@@ -833,11 +833,8 @@ button, input, select, textarea { font-size: 14px; }
     -webkit-print-color-adjust: exact;
   }
 
-  .app-frame {
-    max-width: none !important;
-  }
+  .app-frame { max-width: none !important; }
 
-  /* Remove page elements from the print flow, not just from view. */
   .app-frame > .topbar,
   .app-frame > .app-footer,
   .app-frame > .content > .page-heading,
@@ -845,19 +842,11 @@ button, input, select, textarea { font-size: 14px; }
     display: none !important;
   }
 
-  body * {
-    visibility: hidden !important;
-  }
-
+  body * { visibility: hidden !important; }
   .schedule-print-report,
-  .schedule-print-report * {
-    visibility: visible !important;
-  }
+  .schedule-print-report * { visibility: visible !important; }
 
-  .schedule-workspace {
-    display: block !important;
-  }
-
+  .schedule-workspace { display: block !important; }
   .schedule-print-report {
     display: block !important;
     position: static !important;
@@ -867,7 +856,8 @@ button, input, select, textarea { font-size: 14px; }
     color: #20374b !important;
     background: #fff !important;
     font-family: "DM Sans", "Segoe UI", sans-serif !important;
-    break-inside: avoid;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
   }
 
   .schedule-print-header {
@@ -875,87 +865,122 @@ button, input, select, textarea { font-size: 14px; }
     align-items: flex-start;
     justify-content: space-between;
     gap: 20px;
-    padding-bottom: 10px;
+    padding-bottom: 8px;
     border-bottom: 2px solid #496982;
   }
-
   .schedule-print-header h1 {
-    margin: 5px 0 0;
+    margin: 4px 0 0;
     color: #203c54;
-    font: 700 23px Georgia, serif;
+    font: 700 22px Georgia, serif;
   }
-
   .schedule-print-header > div:first-child > span {
     color: #526879;
     font-size: 8px;
     font-weight: 800;
     letter-spacing: .12em;
   }
-
   .schedule-print-header > div:last-child {
     display: grid;
-    gap: 3px;
+    gap: 2px;
     text-align: right;
     color: #40596c;
     font-size: 9px;
   }
-
   .schedule-print-header > div:last-child strong { font-size: 10px; }
   .schedule-print-header > div:last-child small { color: #617384; font-size: 8px; }
 
   .schedule-print-grid {
     display: grid;
-    grid-template-columns: repeat(7, minmax(0, 1fr));
-    gap: 5px;
-    margin-top: 10px;
+    width: 100%;
+    gap: 0;
+    margin-top: 8px;
     align-items: stretch;
-  }
-
-  .schedule-print-day {
-    min-width: 0;
-    min-height: 112mm;
-    padding: 6px;
-    border: 1px solid #cbd9e1;
-    border-radius: 5px;
-    break-inside: avoid;
-  }
-
-  .schedule-print-day h2 {
-    margin: 0 0 6px;
-    padding-bottom: 4px;
+    border-top: 1px solid #cbd9e1;
     border-bottom: 1px solid #cbd9e1;
-    color: #203c54;
-    font-size: 10px;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
   }
-
-  .schedule-print-event {
-    display: grid;
-    gap: 2px;
-    margin: 0 0 4px;
-    padding: 5px;
-    border-left: 3px solid;
-    border-radius: 3px;
-    break-inside: avoid;
+  .schedule-print-corner,
+  .schedule-print-day-heading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    padding: 4px 2px;
+    border-bottom: 1px solid #b8c8d2;
+    background: #edf4f8 !important;
+    color: #24445d;
+    font-size: 9px;
+    font-weight: 800;
+    text-align: center;
   }
-
-  .schedule-print-event strong {
-    font-size: 8px;
-    line-height: 1.2;
-    overflow-wrap: anywhere;
+  .schedule-print-corner { border-right: 1px solid #cbd9e1; }
+  .schedule-print-time-axis {
+    grid-column: 1;
+    grid-row: 2;
+    position: relative;
+    min-width: 0;
+    border-right: 1px solid #cbd9e1;
+    background: #f7fafb !important;
   }
-
-  .schedule-print-event span {
+  .schedule-print-time-axis span {
+    position: absolute;
+    right: 4px;
+    transform: translateY(-50%);
+    color: #40596c;
     font-size: 7px;
     font-variant-numeric: tabular-nums;
+    white-space: nowrap;
   }
-
-  .schedule-print-empty {
-    color: #76838b;
-    font-size: 8px;
+  .schedule-print-time-axis span:first-child { transform: translateY(0); }
+  .schedule-print-day {
+    grid-row: 2;
+    position: relative;
+    min-width: 0;
+    padding: 0;
+    border-left: 1px solid #d5dfe5;
+    background: #fff !important;
+    overflow: hidden;
   }
-
+  .schedule-print-hour-line {
+    position: absolute;
+    z-index: 0;
+    left: 0;
+    right: 0;
+    border-top: 1px solid #dfe7ec;
+    pointer-events: none;
+  }
+  .schedule-print-event {
+    position: absolute;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 1px;
+    min-width: 0;
+    padding: 2px 3px;
+    border: 0;
+    border-left: 2px solid;
+    border-radius: 2px;
+    overflow: hidden;
+    break-inside: avoid;
+    box-sizing: border-box;
+  }
+  .schedule-print-event strong {
+    display: block;
+    font-size: 7px;
+    line-height: 1.1;
+    overflow-wrap: anywhere;
+  }
+  .schedule-print-event span {
+    display: block;
+    font-size: 6px;
+    line-height: 1.1;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
   .schedule-print-footer {
-    margin-top: 8px;
+    margin-top: 7px;
     color: #647786;
     font-size: 7px;
     text-align: center;
