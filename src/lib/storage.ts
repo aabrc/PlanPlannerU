@@ -12,7 +12,7 @@ function blankState(externalCodes: string[]): PlannerState {
     courseStates: {},
     selections: {},
     externalDone,
-    scheduleEvents: [],
+    scheduleEvents: [],\n    gradeAttempts: [],
     meta: { currentPeriod: "", loadPerTerm: "15", gpa: "", internship: 0 }
   };
 }
@@ -33,7 +33,7 @@ export function normalizePlannerState(
     courseStates: { ...(saved?.courseStates || {}) },
     selections: { ...(saved?.selections || {}) },
     externalDone,
-    scheduleEvents: Array.isArray(saved?.scheduleEvents) ? saved.scheduleEvents : [],
+    scheduleEvents: Array.isArray(saved?.scheduleEvents) ? saved.scheduleEvents : [],\n    gradeAttempts: Array.isArray(saved?.gradeAttempts) ? saved.gradeAttempts : [],
     meta: { ...base.meta, ...(saved?.meta || {}) }
   };
 }
