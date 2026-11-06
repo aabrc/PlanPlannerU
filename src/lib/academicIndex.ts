@@ -80,7 +80,7 @@ export function calculateAcademicIndex(
   }, 0);
 
   return {
-    index: totalCredits > 0 ? Number((qualityPoints / totalCredits).toFixed(2)) : null,
+    index: totalCredits > 0 ? qualityPoints / totalCredits : null,
     totalCredits,
     qualityPoints,
     courseCount: countedAttempts.length,
