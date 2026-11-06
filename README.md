@@ -1,44 +1,53 @@
-# PlanPlannerU — evolución multiplataforma
+# PlanPlannerU — migración React + Vite
 
-Rama de trabajo: `feature/pwa-native-cloud-sync`
+## Rama
+`feature/react-vite-migration`
 
-## Estado
-Esta rama prepara la base técnica para PWA, autenticación por email, sincronización cloud y empaquetado nativo. No es todavía una versión lista para producción: la conexión real requiere crear/configurar un proyecto Supabase y validar el flujo de sincronización con datos de prueba.
+La rama `main` se mantiene intacta. La aplicación anterior se conserva en `legacy/index.html`.
 
-## Diseño
-- La aplicación conserva su almacenamiento local actual para poder trabajar offline.
-- Supabase Auth permite iniciar sesión con código de un solo uso enviado al correo.
-- PostgreSQL guarda una copia del estado académico por usuario, protegida con Row Level Security.
-- Service Worker almacena el shell de la web.
-- Capacitor es la ruta propuesta para Android e iOS.
+## Stack
+- React 19 + TypeScript
+- Vite 6
+- Supabase JS (cliente preparado; autenticación aún no conectada)
+- Capacitor 7 (configuración inicial)
+- GitHub Pages
 
-## Configuración cloud
-1. Crear un proyecto en Supabase.
-2. Ejecutar `supabase/schema.sql` en SQL Editor.
-3. En Authentication → URL Configuration, registrar la URL pública de PlanPlannerU y las URL de prueba.
-4. Configurar el proveedor Email y un SMTP de producción antes de abrir registros al público.
-5. Copiar `cloud-config.example.js` como `cloud-config.js`, rellenar la URL y la clave publicable.
-6. No publicar nunca una clave `service_role`. La clave publicable se puede usar en cliente porque las tablas quedan protegidas por RLS.
+## Requisitos locales
+Node.js 20.19+ recomendado (Node 22 LTS).
 
-## PWA
-`manifest.webmanifest`, `sw.js` y `assets/icon.svg` son los archivos base. El service worker almacena los archivos locales de la aplicación. Para que la apariencia sea totalmente offline todavía hay que alojar localmente las fuentes y Font Awesome que hoy se cargan desde CDN.
-
-## Aplicación nativa
-Capacitor requiere Node.js 22+, dependencias instaladas y proyectos nativos:
+## Ejecutar
 ```bash
 npm install
-npx cap add android
-npx cap add ios
+npm run dev
 ```
-Android puede compilarse desde Android Studio. Para iOS se necesita macOS con Xcode. GitHub Pages seguirá sirviendo la versión web/PWA.
 
-## Antes de producción
-- Añadir interfaz de login (email + OTP) conectada a `window.PlanPlannerUCloud`.
-- Revisar estrategia de conflictos entre dispositivos: el prototipo de sincronización usa confirmación al detectar una copia remota más reciente; no es todavía una fusión automática de cambios concurrentes.
-- Añadir IndexedDB y una cola durable de operaciones, en lugar de depender solamente de localStorage.
-- Alojar fuentes e iconos localmente.
-- Probar exportación/importación, restauración, pérdida de red y dos dispositivos editando a la vez.
-- Añadir pruebas y un pipeline de build/release.
+## Compilar
+```bash
+npm run build
+npm run preview
+```
 
-## Seguridad y privacidad
-Cada usuario debe ver exclusivamente su propio registro. No usar el correo como identificador de autorización: se usa el UUID interno de Supabase Auth. La cuenta requiere verificación del correo.
+## Primera fase migrada
+- Se extrajo el pensum original: 12 períodos, 69 materias obligatorias, 14 grupos electivos, 91 opciones y 212 créditos.
+- Se conservan MAT311 e ILE203 como requisitos cumplidos por admisión.
+- Se mantiene la clave local `itt2020_pensum_tracker_v2` y compatibilidad con la migración antigua `pensum_states`.
+- Se creó una interfaz React inicial con resumen, pensum, búsqueda, filtros, estados, electivas, requisitos externos, meta y respaldos.
+- La aplicación original se preserva en `legacy/index.html`.
+
+## Pendiente antes de publicar
+1. Migrar completamente el calendario semanal y las actividades personales.
+2. Migrar el asesor académico, la proyección de graduación y detalles de la app anterior.
+3. Trasladar el almacenamiento progresivamente a IndexedDB y separar datos por UUID de cuenta.
+4. Implementar autorización de correos, OTP y revocación de sesiones en servidor.
+5. Crear sincronización offline-first, cola durable y resolución de conflictos.
+6. Integrar un service worker sobre el build de Vite y probar la PWA.
+7. Añadir pruebas automatizadas y validar en dos dispositivos.
+8. Compilar y probar Android/iOS con Capacitor.
+
+## Supabase
+Cliente preparado en `src/lib/supabase.ts`. Copia `.env.example` a `.env.local` y añade la URL del proyecto y la clave publicable cuando se implemente autenticación. Nunca incluyas claves secretas ni `service_role` en frontend o GitHub.
+
+La tabla `public.user_planner_data` que ya creaste se conserva; no vuelvas a ejecutar migraciones destructivas.
+
+## GitHub Pages
+Vite usa `/PlanPlannerU/` durante GitHub Actions. El workflow se ejecutará en `main` cuando se decida publicar la migración. Antes, cambia GitHub Pages a **GitHub Actions** en Settings → Pages.
