@@ -475,6 +475,8 @@ function App() {
             <ScheduleCalendar
               events={planner.scheduleEvents}
               onChange={(scheduleEvents) => persistState({ ...planner, scheduleEvents })}
+              scheduleView={planner.scheduleView}
+              onScheduleViewChange={(scheduleView) => persistState({ ...planner, scheduleView })}
             />
           </>
         )}
