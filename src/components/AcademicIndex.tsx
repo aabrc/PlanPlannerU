@@ -176,6 +176,43 @@ function AcademicIndex({
         <p>Registra las notas de tus asignaturas. PlanPlannerU calculará el índice del período o el acumulado usando los créditos del pensum.</p>
       </header>
 
+      <section className="index-guide" aria-labelledby="index-guide-title">
+        <div className="index-guide-heading">
+          <span className="index-guide-icon" aria-hidden="true">✎</span>
+          <div>
+            <span className="eyebrow">GUÍA RÁPIDA</span>
+            <h2 id="index-guide-title">¿Cómo utilizar Mi índice?</h2>
+            <p>Este apartado convierte tus calificaciones en un índice académico de 0.00 a 4.00, tomando en cuenta los créditos reales de cada asignatura.</p>
+          </div>
+        </div>
+        <div className="index-guide-steps">
+          <article className="index-guide-step blue">
+            <span className="index-step-number">1</span>
+            <div>
+              <h3>Elige qué índice consultar</h3>
+              <p><strong>Por período:</strong> selecciona el cuatrimestre y registra las notas de las materias que cursaste allí.</p>
+              <p><strong>Acumulado:</strong> reúne tu historial y, si repetiste una materia, toma la calificación del período más reciente.</p>
+            </div>
+          </article>
+          <article className="index-guide-step green">
+            <span className="index-step-number">2</span>
+            <div>
+              <h3>Registra tus calificaciones</h3>
+              <p>Escribe cada nota de 0 a 100 y pulsa <strong>Guardar</strong>. Los créditos y el nombre de las asignaturas se obtienen automáticamente del pensum.</p>
+              <p>Para una materia repetida o cursada fuera de su período original, utiliza <strong>Agregar materia</strong>.</p>
+            </div>
+          </article>
+          <article className="index-guide-step yellow">
+            <span className="index-step-number">3</span>
+            <div>
+              <h3>Comprende el resultado</h3>
+              <p>El índice no es un promedio simple: cada nota tiene un peso según los créditos de su asignatura. Una materia de más créditos influye más en el resultado.</p>
+              <p>Las notas F cuentan sus créditos con 0.0 puntos; las asignaturas de 0 créditos no modifican el índice.</p>
+            </div>
+          </article>
+        </div>
+      </section>
+
       <section className="index-intro paper-card">
         <strong>¿Qué índice deseas calcular?</strong>
         <div className="index-mode-switch" role="group" aria-label="Tipo de índice">
