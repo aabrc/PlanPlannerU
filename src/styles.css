@@ -220,3 +220,62 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
   .index-result-panel { grid-template-columns: 1fr; }
   .index-result-details { grid-template-columns: repeat(3,minmax(0,1fr)); }
 }
+
+
+/* Readability and contrast refinement */
+:root {
+  --muted: #586a78;
+  --text-secondary: #526575;
+}
+body { color: #263449; }
+.eyebrow, .stat-card span, .stat-card small, .progress-caption,
+.paper-card p, .page-heading p, .field-label, .form-field,
+.course-credits, .external-copy small, .external-state,
+.grade-course-credits, .grade-quality, .index-intro > p,
+.index-panel-heading p, .grade-input-field, .index-result-main small,
+.index-result-details span, .index-form > small, .footnote,
+.migration-note, .app-footer, .empty-message, .elective-card > small {
+  color: #586a78;
+}
+.nav-button, .secondary-button, .filter-button { color: #43596b; }
+.nav-button:hover, .secondary-button:hover, .filter-button:hover {
+  color: #243e53;
+  background: #e8edf0;
+}
+.nav-button.active, .filter-button.active, .index-mode-button.active {
+  color: #23445e;
+  background: #dce8ef;
+  border-color: #9fb7c6;
+}
+.stat-card { border-color: #d8d0c1; }
+.stat-card strong, .panel-heading h2, .paper-card h2,
+.index-panel-heading h2, .index-entry-panel h2,
+.index-intro > strong, .index-formula > strong { color: #263f55; }
+.period-summary, .elective-card, .plan-toolbar, .add-course-row,
+.external-row, .empty-message { color: #344b5d; }
+.period-summary small, .period-progress { color: #526879; }
+.course-card { border-color: #d7d1c6; }
+.course-code, .grade-course-copy strong, .schedule-card strong,
+.external-copy strong { color: #315d78; }
+.course-name, .grade-course-copy span, .schedule-card span { color: #344b5d; }
+.status-badge.pending, .badge.pending { color: #5c6870; background: #e8e6df; }
+.status-badge.inprogress, .badge.inprogress { color: #285773; background: #dceaf2; }
+.status-badge.approved, .badge.approved { color: #315d3d; background: #dcebdc; }
+.status-badge.blocked, .badge.blocked { color: #795321; background: #f2e5cb; }
+.state-button.pending { color: #315a74; background: #edf3f6; border-color: #b9cbd5; }
+.state-button.inprogress { color: #234f6a; background: #dceaf2; border-color: #a9c4d3; }
+.state-button.approved { color: #315d3d; background: #dcebdc; border-color: #b8d0b9; }
+.index-mode-button { color: #43596b; border-color: #c9cfcf; }
+.index-result-panel { background: #e7f0e5; border-color: #b9cfb8; }
+.index-result-main span, .index-result-main small { color: #46624c; }
+.index-result-main strong { color: #285a35; }
+.grade-scale span { color: #465b69; background: #f5f1e7; border-color: #d9d1c2; }
+.grade-scale strong { color: #263f55; }
+input, select, textarea { color: #263f55; }
+input::placeholder { color: #71808a; opacity: 1; }
+:focus-visible { outline: 3px solid #527f9b; outline-offset: 2px; }
+.brand-mark { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 14px; background: #496982; box-shadow: 0 4px 10px #29465c24; }
+.brand-mark svg { width: 37px; height: 37px; display: block; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
