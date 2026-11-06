@@ -193,28 +193,36 @@ export default function ScheduleCalendar({
           <button className="secondary-button" type="button" onClick={() => onScheduleViewChange({ ...scheduleView, start: 0, end: 1440, lastVisibleDay: 6 })} disabled={viewStart === 0 && viewEnd === 1440 && scheduleView.lastVisibleDay === 6}>Mostrar todo</button>
           <button className="primary-button" type="button" onClick={() => window.print()}>Exportar PDF</button>
         </div>
-        <div className="schedule-day-controls" role="group" aria-label="Días visibles">
-          <strong>Mostrar días</strong>
-          {DAYS.map((day, index) => {
-            const visible = index <= scheduleView.lastVisibleDay;
-            return (
-              <label className={visible ? "schedule-day-toggle visible" : "schedule-day-toggle"} key={day.id}>
-                <input
-                  type="checkbox"
-                  checked={visible}
-                  disabled={index === 0}
-                  onChange={(event) => {
-                    const lastVisibleDay = event.target.checked
-                      ? Math.max(scheduleView.lastVisibleDay, index)
-                      : Math.max(0, index - 1);
-                    onScheduleViewChange({ ...scheduleView, lastVisibleDay });
-                  }}
-                />
-                {day.short}
-              </label>
-            );
-          })}
-          <small>Al ocultar un día, también se ocultan los días siguientes.</small>
+        <div className="schedule-day-controls" role="group" aria-label="Días que se muestran en el calendario">
+          <div className="schedule-day-controls-heading">
+            <div>
+              <strong>Mostrar días</strong>
+              <small>Personaliza cuántos días aparecen en tu semana.</small>
+            </div>
+            <span className="schedule-day-start-note">La semana comienza el lunes</span>
+          </div>
+          <div className="schedule-day-options">
+            {DAYS.map((day, index) => {
+              const visible = index <= scheduleView.lastVisibleDay;
+              return (
+                <label className={visible ? "schedule-day-toggle visible" : "schedule-day-toggle"} key={day.id}>
+                  <input
+                    type="checkbox"
+                    checked={visible}
+                    disabled={index === 0}
+                    onChange={(event) => {
+                      const lastVisibleDay = event.target.checked
+                        ? Math.max(scheduleView.lastVisibleDay, index)
+                        : Math.max(0, index - 1);
+                      onScheduleViewChange({ ...scheduleView, lastVisibleDay });
+                    }}
+                  />
+                  <span>{day.short}</span>
+                </label>
+              );
+            })}
+          </div>
+          <p className="schedule-day-hint"><span aria-hidden="true">ⓘ</span> Al ocultar un día, también se ocultan los días siguientes.</p>
         </div>
       </div>
       <div className="schedule-legend"><span><i className="schedule-legend-dot class-dot" />Clases</span><span><i className="schedule-legend-dot personal-dot" />Actividades personales</span></div>
