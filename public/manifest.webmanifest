@@ -1,0 +1,19 @@
+{
+  "name": "PlanPlannerU",
+  "short_name": "PlanPlannerU",
+  "description": "Organizador académico para el plan ITT-2020.",
+  "lang": "es",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f3eddf",
+  "theme_color": "#f3eddf",
+  "icons": [
+    {
+      "src": "assets/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
