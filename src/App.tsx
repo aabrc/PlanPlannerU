@@ -349,7 +349,15 @@ function App() {
     <div className="app-frame">
       <header className="topbar">
         <a className="brand" href="#inicio" onClick={() => setPage("home")}>
-          <span className="brand-mark">P</span>
+          <span className="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 64 64" role="img" focusable="false">
+              <rect x="10" y="8" width="36" height="46" rx="5" fill="#fffdf7" stroke="#d9e1e3" strokeWidth="2" />
+              <path d="M18 20h19M18 28h13M18 36h10" stroke="#b8cbd3" strokeWidth="2.5" strokeLinecap="round" />
+              <path d="M37 14l12 12-20 20-8 2 2-8z" fill="#d6e4eb" stroke="#29465c" strokeWidth="2.5" strokeLinejoin="round" />
+              <path d="M21 48l8-2-6-6z" fill="#d5a16f" />
+              <path d="M37 14l4-4a4 4 0 0 1 6 0l4 4a4 4 0 0 1 0 6l-4 4z" fill="#fff" stroke="#29465c" strokeWidth="2.5" />
+            </svg>
+          </span>
           <span><strong>PlanPlannerU</strong><small>Tu cuaderno telemático</small></span>
         </a>
         <nav className="main-nav" aria-label="Navegación principal">
