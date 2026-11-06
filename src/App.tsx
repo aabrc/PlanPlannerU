@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import planData from "./data/plan.json";
 import AcademicIndex from "./components/AcademicIndex";
+import ScheduleCalendar from "./components/ScheduleCalendar";
 import { EXTERNAL_INFO } from "./data/externalRequirements";
 import {
   downloadBackup,
@@ -470,23 +471,11 @@ function App() {
 
         {page === "schedule" && (
           <>
-            <PageHeading eyebrow="ORGANIZACIÓN" title="Mi horario" description="Las materias marcadas En curso aparecen aquí como pendientes de asignar." />
-            <div className="paper-card">
-              <div className="panel-heading"><div><h2>Materias en curso</h2><p>Se conservan los bloques existentes en tu archivo local.</p></div><span className="status-badge inprogress">{planner.scheduleEvents.length} elementos</span></div>
-              {planner.scheduleEvents.length ? (
-                <div className="schedule-list">
-                  {planner.scheduleEvents.map((event) => (
-                    <article className="schedule-card" key={event.id}>
-                      <strong>{event.courseCode || "Actividad personal"}</strong>
-                      <span>{event.title}</span>
-                      <small>{event.days?.length ? event.days.join(", ") : "Días pendientes"} · {event.start && event.end ? event.start + "–" + event.end : "Horario pendiente"}</small>
-                    </article>
-                  ))}
-                </div>
-              ) : <p className="empty-message">Todavía no hay materias o actividades registradas en tu horario.</p>}
-              <div className="notice-panel">La edición completa del calendario semanal y las actividades personales se trasladará en la siguiente fase de migración. Mientras tanto, puedes abrir la versión anterior para gestionarlos.</div>
-              <a className="legacy-link" href="./legacy/index.html" target="_blank" rel="noreferrer">Abrir horario en la versión anterior ↗</a>
-            </div>
+            <PageHeading eyebrow="ORGANIZACIÓN" title="Mi horario" description="Organiza tus clases y actividades personales en una vista semanal editable." />
+            <ScheduleCalendar
+              events={planner.scheduleEvents}
+              onChange={(scheduleEvents) => persistState({ ...planner, scheduleEvents })}
+            />
           </>
         )}
 
