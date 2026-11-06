@@ -419,7 +419,7 @@ function App() {
                 </div>
               </div>
             </section>
-            <p className="migration-note">Esta es la primera etapa de la migración React. El calendario editable, las actividades personales, el asesor académico y la sincronización se incorporarán gradualmente. La versión anterior se conserva como respaldo.</p>
+            <p className="migration-note">PlanPlannerU continúa en migración. El pensum, el horario semanal y el cálculo del índice ya están disponibles en esta versión; el asesor académico, la sincronización y las funciones restantes se incorporarán gradualmente. La versión anterior se conserva como referencia.</p>
             <a className="legacy-link" href="./legacy/index.html" target="_blank" rel="noreferrer">Abrir la versión anterior completa ↗</a>
           </>
         )}
