@@ -38,6 +38,8 @@ type Segment = { event: ScheduleEvent; start: number; end: number; part: "full" 
 const emptyDraft = (): Draft => ({ id: "", courseCode: "", title: "", days: [], start: "08:00", end: "09:00", color: "blue" });
 const toMinutes = (value?: string) => { const [h, m] = (value || "00:00").split(":").map(Number); return h * 60 + m; };
 const fromMinutes = (value: number) => `${String(Math.floor(value / 60) % 24).padStart(2, "0")}:${String(value % 60).padStart(2, "0")}`;
+const TIME_OPTIONS = Array.from({ length: 49 }, (_, index) => index * 30);
+const formatMinutes = (value: number) => value === 1440 ? "24:00" : fromMinutes(value);
 const hasSchedule = (event: ScheduleEvent) => !!event.days?.length && !!event.start && !!event.end;
 const makeId = () => globalThis.crypto?.randomUUID?.() || `evt-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
@@ -65,6 +67,35 @@ function buildSegments(events: ScheduleEvent[], dayIndex: number): Segment[] {
   return segments.map((segment) => ({ ...segment, lanes: laneCount }));
 }
 
+function buildVisibleSegments(events: ScheduleEvent[], dayIndex: number, rangeStart: number, rangeEnd: number): Segment[] {
+  const segments = events
+    .flatMap((event) => segmentsForDay(event, dayIndex))
+    .map((segment) => ({
+      ...segment,
+      start: Math.max(segment.start, rangeStart),
+      end: Math.min(segment.end, rangeEnd),
+      lane: 0,
+      lanes: 1
+    }))
+    .filter((segment) => segment.end > segment.start)
+    .sort((a, b) => a.start - b.start || a.end - b.end);
+
+  const laneEnds: number[] = [];
+  segments.forEach((segment) => {
+    let lane = laneEnds.findIndex((end) => end <= segment.start);
+    if (lane < 0) {
+      lane = laneEnds.length;
+      laneEnds.push(segment.end);
+    } else {
+      laneEnds[lane] = segment.end;
+    }
+    segment.lane = lane;
+  });
+
+  const laneCount = Math.max(1, laneEnds.length);
+  return segments.map((segment) => ({ ...segment, lanes: laneCount }));
+}
+
 function getConflicts(candidate: ScheduleEvent, events: ScheduleEvent[]) {
   const conflicts = new Set<string>();
   DAYS.forEach((day, index) => {
@@ -83,8 +114,16 @@ function getConflicts(candidate: ScheduleEvent, events: ScheduleEvent[]) {
 export default function ScheduleCalendar({ events, onChange }: { events: ScheduleEvent[]; onChange: (events: ScheduleEvent[]) => void }) {
   const [draft, setDraft] = useState<Draft | null>(null);
   const [message, setMessage] = useState("");
+  const [viewStart, setViewStart] = useState(0);
+  const [viewEnd, setViewEnd] = useState(1440);
   const scheduled = useMemo(() => events.filter(hasSchedule), [events]);
   const unscheduled = useMemo(() => events.filter((event) => event.courseCode && !hasSchedule(event)), [events]);
+  const viewHeight = ((viewEnd - viewStart) / 60) * HOUR_HEIGHT;
+  const timeTicks: number[] = [];
+  for (let minute = Math.ceil(viewStart / 60) * 60; minute < viewEnd; minute += 60) {
+    timeTicks.push(minute);
+  }
+  const daySegments = DAYS.map((_, index) => buildVisibleSegments(events, index, viewStart, viewEnd));
 
   const openNew = () => { setMessage(""); setDraft(emptyDraft()); };
   const openEdit = (event: ScheduleEvent) => {
@@ -121,25 +160,69 @@ export default function ScheduleCalendar({ events, onChange }: { events: Schedul
         <div><span className="eyebrow">ORGANIZACIÓN · TU SEMANA</span><h2>Mi horario semanal</h2><p>Organiza tus clases, estudio, descanso y actividades personales. Los bloques se repiten cada semana en los días seleccionados.</p></div>
         <button className="primary-button" type="button" onClick={openNew}>＋ Añadir actividad</button>
       </div>
-      <div className="schedule-section-heading"><div><h2>Vista de la semana</h2><p>Lunes a domingo · horario de 24 horas</p></div><strong>{scheduled.length} bloques{unscheduled.length ? ` · ${unscheduled.length} por organizar` : ""}</strong></div>
+      <div className="schedule-view-toolbar">
+        <div className="schedule-section-heading">
+          <div><h2>Vista de la semana</h2><p>Elige el intervalo de horas que deseas consultar.</p></div>
+          <strong>{scheduled.length} bloques{unscheduled.length ? ` · ${unscheduled.length} por organizar` : ""}</strong>
+        </div>
+        <div className="schedule-view-controls">
+          <label>Desde
+            <select value={viewStart} onChange={(event) => setViewStart(Number(event.target.value))}>
+              {TIME_OPTIONS.filter((minute) => minute < viewEnd).map((minute) => <option value={minute} key={minute}>{formatMinutes(minute)}</option>)}
+            </select>
+          </label>
+          <label>Hasta
+            <select value={viewEnd} onChange={(event) => setViewEnd(Number(event.target.value))}>
+              {TIME_OPTIONS.filter((minute) => minute > viewStart).map((minute) => <option value={minute} key={minute}>{formatMinutes(minute)}</option>)}
+            </select>
+          </label>
+          <button className="secondary-button" type="button" onClick={() => { setViewStart(0); setViewEnd(1440); }} disabled={viewStart === 0 && viewEnd === 1440}>Mostrar todo</button>
+          <button className="primary-button" type="button" onClick={() => window.print()}>Exportar PDF</button>
+        </div>
+      </div>
       <div className="schedule-legend"><span><i className="schedule-legend-dot class-dot" />Clases</span><span><i className="schedule-legend-dot personal-dot" />Actividades personales</span></div>
       {unscheduled.length > 0 && <section className="unscheduled-panel"><h3>Materias en curso por organizar</h3><p>Ya están añadidas a tu horario. Solo falta indicar los días y las horas en que las cursas.</p><div className="unscheduled-list">{unscheduled.map((event) => <div className="unscheduled-row" key={event.id}><div><strong>{event.courseCode} · {event.title}</strong><small>En curso · falta asignar días y horas</small></div><button className="secondary-button" type="button" onClick={() => openEdit(event)}>Elegir días y horas</button></div>)}</div></section>}
-      <div className="calendar-shell"><div className="calendar-grid-react">
+      <div className="calendar-shell"><div className="calendar-grid-react" style={{ gridTemplateRows: `58px ${viewHeight}px` }}>
         <div className="calendar-corner-react" />
-        {DAYS.map((day, index) => <div className="calendar-day-head" key={day.id}><strong>{day.name}</strong><small>{buildSegments(events, index).length} bloques</small></div>)}
-        <div className="calendar-time-axis">{Array.from({ length: 24 }, (_, hour) => <span key={hour} style={{ top: hour * HOUR_HEIGHT }}>{String(hour).padStart(2, "0")}:00</span>)}</div>
-        {DAYS.map((day, index) => <div className="calendar-day-lane" key={day.id}>
-          {Array.from({ length: 24 }, (_, hour) => <i className="calendar-hour-line" key={hour} style={{ top: hour * HOUR_HEIGHT }} />)}
-          {buildSegments(events, index).map((segment, segmentIndex) => {
+        {DAYS.map((day, index) => <div className="calendar-day-head" key={day.id}><strong>{day.name}</strong><small>{daySegments[index].length} bloques</small></div>)}
+        <div className="calendar-time-axis">{timeTicks.map((minute) => <span key={minute} style={{ top: (minute - viewStart) / 60 * HOUR_HEIGHT }}>{formatMinutes(minute)}</span>)}</div>
+        {DAYS.map((day, index) => <div className="calendar-day-lane" key={day.id} style={{ height: viewHeight }}>
+          {timeTicks.map((minute) => <i className="calendar-hour-line" key={minute} style={{ top: (minute - viewStart) / 60 * HOUR_HEIGHT }} />)}
+          {daySegments[index].map((segment, segmentIndex) => {
             const color = segment.event.courseCode ? { bg: "#dceeff", border: "#86bce4", text: "#174f78" } : (COLORS.find((item) => item.id === segment.event.color) || COLORS[0]);
-            const top = segment.start / 60 * HOUR_HEIGHT, height = Math.max(26, (segment.end - segment.start) / 60 * HOUR_HEIGHT);
+            const top = (segment.start - viewStart) / 60 * HOUR_HEIGHT;
+            const height = Math.max(18, (segment.end - segment.start) / 60 * HOUR_HEIGHT);
             const width = 100 / segment.lanes, left = segment.lane * width;
-            const time = segment.part === "end" ? `00:00–${fromMinutes(segment.end)}` : segment.part === "start" ? `${fromMinutes(segment.start)}–24:00` : `${segment.event.start}–${segment.event.end}${toMinutes(segment.event.end) < toMinutes(segment.event.start) ? " (+1 día)" : ""}`;
-            return <button key={segment.event.id + segment.part + segmentIndex} type="button" className={segment.event.courseCode ? "calendar-event-react class-event" : "calendar-event-react personal-event"} style={{ top, height, left: `calc(${left}% + 2px)`, width: `calc(${width}% - 4px)`, background: color.bg, borderColor: color.border, color: color.text }} onClick={() => openEdit(segment.event)} title={`Editar ${segment.event.title}`}><strong>{segment.event.title}</strong><span>{time}{segment.part === "end" ? " · continúa" : segment.part === "start" && toMinutes(segment.event.end) < toMinutes(segment.event.start) ? " · continúa mañana" : ""}</span></button>;
+            const time = `${formatMinutes(segment.start)}–${formatMinutes(segment.end)}`;
+            const continuation = segment.part === "end" ? " · continúa" : segment.part === "start" ? " · continúa mañana" : "";
+            return <button key={segment.event.id + segment.part + segmentIndex} type="button" className={segment.event.courseCode ? "calendar-event-react class-event" : "calendar-event-react personal-event"} style={{ top, height, left: `calc(${left}% + 2px)`, width: `calc(${width}% - 4px)`, background: color.bg, borderColor: color.border, color: color.text }} onClick={() => openEdit(segment.event)} title={`Editar ${segment.event.title}`}><strong>{segment.event.title}</strong><span>{time}{continuation}</span></button>;
           })}
         </div>)}
       </div></div>
       <div className="schedule-section-heading"><div><h2>Actividades registradas</h2><p>Selecciona un bloque para modificarlo.</p></div></div>
+      <section className="schedule-print-report">
+        <header className="schedule-print-header">
+          <div><span>PLANPLANNERU · INGENIERÍA TELEMÁTICA · ITT-2020</span><h1>Mi horario semanal</h1></div>
+          <div><strong>Intervalo visible</strong><span>{formatMinutes(viewStart)}–{formatMinutes(viewEnd)}</span><small>Exportado el {new Date().toLocaleDateString("es-DO", { day: "numeric", month: "long", year: "numeric" })}</small></div>
+        </header>
+        <div className="schedule-print-grid">
+          {DAYS.map((day, index) => (
+            <section className="schedule-print-day" key={day.id}>
+              <h2>{day.name}</h2>
+              {daySegments[index].length ? daySegments[index].map((segment, segmentIndex) => {
+                const color = segment.event.courseCode ? { bg: "#dceeff", text: "#174f78" } : (COLORS.find((item) => item.id === segment.event.color) || COLORS[0]);
+                const continuation = segment.part === "end" ? " · continúa" : segment.part === "start" ? " · continúa mañana" : "";
+                return <article className="schedule-print-event" key={segment.event.id + segment.part + segmentIndex} style={{ background: color.bg, borderLeftColor: color.text, color: color.text }}>
+                  <strong>{segment.event.title}</strong>
+                  <span>{formatMinutes(segment.start)}–{formatMinutes(segment.end)}{continuation}</span>
+                </article>;
+              }) : <p className="schedule-print-empty">Sin actividades</p>}
+            </section>
+          ))}
+        </div>
+        <footer className="schedule-print-footer">Documento personal generado por PlanPlannerU. No constituye un horario oficial emitido por la PUCMM.</footer>
+      </section>
+
       <div className="schedule-registered-list">{scheduled.length ? scheduled.map((event) => <button type="button" className="schedule-registered-item" key={event.id} onClick={() => openEdit(event)}><span><strong>{event.courseCode ? event.courseCode + " · " : ""}{event.title}</strong><small>{(event.days || []).map((id) => DAYS.find((day) => day.id === id)?.short || id).join(", ")} · {event.start}–{event.end}{toMinutes(event.end) < toMinutes(event.start) ? " (+1 día)" : ""}</small></span><span aria-hidden="true">✎</span></button>) : <p className="empty-message">Todavía no hay bloques con horario asignado.</p>}</div>
 
       {draft && <div className="schedule-modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setDraft(null); }}>
