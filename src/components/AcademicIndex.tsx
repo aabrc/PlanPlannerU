@@ -182,7 +182,7 @@ function AcademicIndex({
           <div>
             <span className="eyebrow">GUÍA RÁPIDA</span>
             <h2 id="index-guide-title">¿Cómo utilizar Mi índice?</h2>
-            <p>Este apartado convierte tus calificaciones en un índice académico de 0.00 a 4.00, tomando en cuenta los créditos reales de cada asignatura.</p>
+            <p>Este apartado convierte tus calificaciones en un índice académico de 0.0 a 4.0, tomando en cuenta los créditos reales de cada asignatura.</p>
           </div>
         </div>
         <div className="index-guide-steps">
@@ -367,8 +367,8 @@ function AcademicIndex({
       <section className="index-result-panel">
         <div className="index-result-main">
           <span>{mode === "period" ? "ÍNDICE DEL PERÍODO" : "ÍNDICE ACUMULADO"}</span>
-          <strong>{activeResult.index === null ? "—" : activeResult.index.toFixed(2)}</strong>
-          <small>{activeResult.index === null ? "Registra calificaciones para calcularlo" : "Escala de 0.00 a 4.00"}</small>
+          <strong>{activeResult.index === null ? "—" : activeResult.index.toFixed(1)}</strong>
+          <small>{activeResult.index === null ? "Registra calificaciones para calcularlo" : "Escala de 0.0 a 4.0"}</small>
         </div>
         <div className="index-result-details">
           <div><strong>{activeResult.courseCount}</strong><span>Materias ponderadas</span></div>
@@ -380,6 +380,7 @@ function AcademicIndex({
       <section className="index-formula paper-card">
         <strong>Cómo se calcula</strong>
         <p>Índice = suma de (puntos de calidad × créditos) ÷ suma de créditos cursados con calificación.</p>
+        <p>El resultado se presenta redondeado a un decimal. Por ejemplo, un índice de 3.25 se muestra como 3.3.</p>
         <div className="grade-scale">
           <span><strong>A</strong> 90–100 · 4.0</span>
           <span><strong>B</strong> 80–89 · 3.0</span>
