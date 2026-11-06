@@ -28,6 +28,21 @@ const STATUS_LABEL: Record<CourseStatus, string> = {
 };
 
 type Page = "home" | "plan" | "schedule" | "meta" | "requirements" | "index";
+const NAVIGATION_STORAGE_KEY = "planplanneru_last_page_v1";
+const VALID_PAGES: Page[] = ["home", "plan", "schedule", "meta", "requirements", "index"];
+
+function getInitialPage(): Page {
+  try {
+    const savedPage = localStorage.getItem(NAVIGATION_STORAGE_KEY);
+    return savedPage && VALID_PAGES.includes(savedPage as Page)
+      ? (savedPage as Page)
+      : "home";
+  } catch (error) {
+    console.warn("No se pudo recuperar la última sección de PlanPlannerU.", error);
+    return "home";
+  }
+}
+
 type Filter = "all" | "pending" | "inprogress" | "approved" | "blocked";
 
 function courseList(): Course[] {
@@ -118,7 +133,7 @@ function periodSummary(period: Period, state: PlannerState) {
 
 function App() {
   const [planner, setPlanner] = useState<PlannerState>(getInitialState);
-  const [page, setPage] = useState<Page>("home");
+  const [page, setPage] = useState<Page>(getInitialPage);
   const [filter, setFilter] = useState<Filter>("all");
   const [search, setSearch] = useState("");
   const [expanded, setExpanded] = useState<string[]>([planner.meta.currentPeriod || PLAN.periods[0].id]);
@@ -128,6 +143,14 @@ function App() {
   useEffect(() => {
     if (!savePlannerState(planner)) setToast("No se pudo guardar. Exporta un respaldo para proteger tus cambios.");
   }, [planner]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(NAVIGATION_STORAGE_KEY, page);
+    } catch (error) {
+      console.warn("No se pudo guardar la última sección de PlanPlannerU.", error);
+    }
+  }, [page]);
 
   useEffect(() => {
     if (!toast) return;
