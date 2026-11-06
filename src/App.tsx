@@ -222,8 +222,14 @@ function App() {
     });
   };
 
-  const togglePeriod = (id: string) => {
-    setExpanded((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]);
+  const togglePeriod = (id: string, open: boolean) => {
+    setExpanded((current) => {
+      if (open) {
+        return current.includes(id) ? current : [...current, id];
+      }
+
+      return current.filter((item) => item !== id);
+    });
   };
 
   const visiblePeriods = PLAN.periods.filter((period) => {
@@ -284,7 +290,7 @@ function App() {
           <span>{course.credits} créditos</span>
           {course.id && <span>ID {course.id}</span>}
         </div>
-        {(course.req?.length || course.additional?.length || blockers.length > 0) > 0 && (
+        {Boolean(course.req?.length || course.additional?.length || blockers.length) && (
           <div className="requirements">
             {course.req?.length ? <p><strong>Prerrequisitos:</strong> {course.req.join(", ")}</p> : null}
             {course.additional?.length ? <p><strong>Requisitos adicionales:</strong> {course.additional.join(", ")}</p> : null}
@@ -377,7 +383,7 @@ function App() {
               <Stat label="Créditos aprobados" value={approved + " / " + PLAN.totalCredits} detail="Incluye electivas seleccionadas" />
               <Stat label="Asignaturas en curso" value={String(inProgressCount)} detail="Pendientes de aprobación" />
               <Stat label="Asignaturas aprobadas" value={String(approvedCount)} detail="Según tu registro actual" />
-              <Stat label="Plan académico" value={String(PLAN.periods.length) + " períodos"} detail={String(ALL_COURSES.length) + " asignaturas y opciones" />
+              <Stat label="Plan académico" value={String(PLAN.periods.length) + " períodos"} detail={String(ALL_COURSES.length) + " asignaturas y opciones"} />
             </section>
             <section className="progress-panel">
               <div className="panel-heading"><div><span className="eyebrow">RECORRIDO ACADÉMICO</span><h2>Progreso de la carrera</h2></div><strong>{progress}%</strong></div>
@@ -435,9 +441,7 @@ function App() {
               if (query && !courses.length && !groups.some((group) => group.options.some((course) => normalizeText(course.code + " " + course.name).includes(query)))) return null;
               return (
                 <details className={summary.complete ? "period-card complete" : "period-card"} key={period.id} open={isOpen} onToggle={(event) => {
-                  if ((event.currentTarget as HTMLDetailsElement).open) {
-                    setExpanded((current) => current.includes(period.id) ? current : [...current, period.id]);
-                  }
+                  togglePeriod(period.id, (event.currentTarget as HTMLDetailsElement).open);
                 }}>
                   <summary className="period-summary">
                     <span><strong>{period.label}</strong><small>{summary.completed}/{summary.total} cursos obligatorios · {summary.groupsCompleted}/{summary.groupsTotal} electivas</small></span>
