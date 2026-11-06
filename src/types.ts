@@ -49,11 +49,19 @@ export interface ScheduleEvent {
   color?: string;
   [key: string]: unknown;
 }
-export interface GradeAttempt {\n  id: string;\n  courseCode: string;\n  periodId: string;\n  grade: number;\n  createdAt: number;\n}\nexport interface PlannerState {
+export interface GradeAttempt {
+  id: string;
+  courseCode: string;
+  periodId: string;
+  grade: number;
+  createdAt: number;
+}
+export interface PlannerState {
   courseStates: Record<string, CourseStatus>;
   selections: Record<string, string>;
   externalDone: Record<string, boolean>;
-  scheduleEvents: ScheduleEvent[];\n  gradeAttempts: GradeAttempt[];
+  scheduleEvents: ScheduleEvent[];
+  gradeAttempts: GradeAttempt[];
   meta: {
     currentPeriod: string;
     loadPerTerm: string;
