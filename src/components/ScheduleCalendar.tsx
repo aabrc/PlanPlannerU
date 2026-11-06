@@ -54,19 +54,6 @@ function segmentsForDay(event: ScheduleEvent, dayIndex: number) {
   return result;
 }
 
-function buildSegments(events: ScheduleEvent[], dayIndex: number): Segment[] {
-  const segments: Segment[] = events.flatMap((event) => segmentsForDay(event, dayIndex)).filter((segment) => segment.end > segment.start).sort((a, b) => a.start - b.start || a.end - b.end).map((segment) => ({ ...segment, lane: 0, lanes: 1 }));
-  const laneEnds: number[] = [];
-  segments.forEach((segment) => {
-    let lane = laneEnds.findIndex((end) => end <= segment.start);
-    if (lane < 0) { lane = laneEnds.length; laneEnds.push(segment.end); }
-    else laneEnds[lane] = segment.end;
-    segment.lane = lane;
-  });
-  const laneCount = Math.max(1, laneEnds.length);
-  return segments.map((segment) => ({ ...segment, lanes: laneCount }));
-}
-
 function buildVisibleSegments(events: ScheduleEvent[], dayIndex: number, rangeStart: number, rangeEnd: number): Segment[] {
   const segments = events
     .flatMap((event) => segmentsForDay(event, dayIndex))
