@@ -742,3 +742,184 @@ button, input, select, textarea { font-size: 14px; }
   .schedule-modal-actions > span { display: none; }
   .schedule-delete-button { margin-right: auto; }
 }
+
+
+/* Schedule time-range controls and PDF print layout */
+.schedule-view-toolbar {
+  display: grid;
+  gap: 12px;
+  padding: 16px 18px;
+  border: 1px solid #cbd9e1;
+  border-radius: 13px;
+  background: #f5f9fc;
+}
+.schedule-view-toolbar .schedule-section-heading { margin: 0; }
+.schedule-view-controls {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.schedule-view-controls label {
+  display: grid;
+  gap: 5px;
+  color: #40596c;
+  font-size: 12px;
+  font-weight: 800;
+}
+.schedule-view-controls select {
+  min-width: 112px;
+  min-height: 42px;
+  padding: 8px 10px;
+  border: 1px solid #aebfc9;
+  border-radius: 9px;
+  background: #fff;
+  color: #203c54;
+  font-size: 14px;
+}
+.schedule-view-controls .primary-button,
+.schedule-view-controls .secondary-button {
+  margin: 0;
+}
+.schedule-view-controls button:disabled {
+  cursor: default;
+  opacity: .55;
+}
+.calendar-grid-react {
+  grid-template-rows: 58px 1152px;
+}
+.calendar-day-lane {
+  background: #fff;
+}
+.calendar-event-react {
+  font-size: 12px;
+  padding: 6px 7px;
+}
+.calendar-event-react strong { font-size: 12px; }
+.calendar-event-react span { font-size: 11px; }
+.schedule-print-report { display: none; }
+
+@media (max-width: 700px) {
+  .schedule-view-controls {
+    align-items: stretch;
+  }
+  .schedule-view-controls label {
+    flex: 1 1 110px;
+  }
+  .schedule-view-controls select {
+    width: 100%;
+  }
+  .schedule-view-controls button {
+    flex: 1 1 140px;
+  }
+}
+
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 11mm;
+  }
+  html, body {
+    width: 100%;
+    min-width: 0;
+    height: auto;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+  body * {
+    visibility: hidden !important;
+  }
+  .schedule-print-report,
+  .schedule-print-report * {
+    visibility: visible !important;
+  }
+  .schedule-print-report {
+    display: block !important;
+    position: absolute !important;
+    inset: 0 auto auto 0 !important;
+    width: 100% !important;
+    color: #20374b !important;
+    background: #fff !important;
+    font-family: "DM Sans", "Segoe UI", sans-serif !important;
+  }
+  .schedule-print-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #496982;
+  }
+  .schedule-print-header h1 {
+    margin: 5px 0 0;
+    color: #203c54;
+    font: 700 25px Georgia, serif;
+  }
+  .schedule-print-header > div:first-child > span {
+    color: #526879;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .12em;
+  }
+  .schedule-print-header > div:last-child {
+    display: grid;
+    gap: 3px;
+    text-align: right;
+    color: #40596c;
+    font-size: 10px;
+  }
+  .schedule-print-header > div:last-child strong { font-size: 11px; }
+  .schedule-print-header > div:last-child small { color: #617384; font-size: 9px; }
+  .schedule-print-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 6px;
+    margin-top: 12px;
+    align-items: start;
+  }
+  .schedule-print-day {
+    min-height: 115mm;
+    padding: 7px;
+    border: 1px solid #cbd9e1;
+    border-radius: 6px;
+    break-inside: avoid;
+  }
+  .schedule-print-day h2 {
+    margin: 0 0 7px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #cbd9e1;
+    color: #203c54;
+    font-size: 11px;
+  }
+  .schedule-print-event {
+    display: grid;
+    gap: 3px;
+    margin: 0 0 5px;
+    padding: 6px;
+    border-left: 3px solid;
+    border-radius: 3px;
+    break-inside: avoid;
+  }
+  .schedule-print-event strong {
+    font-size: 9px;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
+  .schedule-print-event span {
+    font-size: 8px;
+    font-variant-numeric: tabular-nums;
+  }
+  .schedule-print-empty {
+    color: #76838b;
+    font-size: 9px;
+  }
+  .schedule-print-footer {
+    margin-top: 10px;
+    color: #647786;
+    font-size: 8px;
+    text-align: center;
+  }
+}
