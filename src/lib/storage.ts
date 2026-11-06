@@ -5,10 +5,25 @@ export const STORAGE_KEY = "itt2020_pensum_tracker_v2";
 const AUTO_COMPLETED_EXTERNAL = ["MAT311", "ILE203"];
 
 function normalizeScheduleView(saved?: { start?: number; end?: number }): { start: number; end: number } {
-  const validStart = Number.isInteger(saved?.start) && saved.start! >= 0 && saved.start! < 1440 && saved.start! % 30 === 0;
-  const validEnd = Number.isInteger(saved?.end) && saved.end! > 0 && saved.end! <= 1440 && saved.end! % 30 === 0;
-  const start = validStart ? saved!.start! : 0;
-  const end = validEnd ? saved!.end! : 1440;
+  const savedStart = saved?.start;
+  const savedEnd = saved?.end;
+
+  const start =
+    typeof savedStart === "number" &&
+    Number.isInteger(savedStart) &&
+    savedStart >= 0 &&
+    savedStart < 1440 &&
+    savedStart % 30 === 0
+      ? savedStart
+      : 0;
+  const end =
+    typeof savedEnd === "number" &&
+    Number.isInteger(savedEnd) &&
+    savedEnd > 0 &&
+    savedEnd <= 1440 &&
+    savedEnd % 30 === 0
+      ? savedEnd
+      : 1440;
 
   if (end <= start) return { start: 0, end: 1440 };
   return { start, end };
