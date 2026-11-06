@@ -986,3 +986,113 @@ button, input, select, textarea { font-size: 14px; }
     text-align: center;
   }
 }
+
+/* Clear, compact controls for the visible weekdays */
+.schedule-day-controls {
+  display: grid;
+  gap: 12px;
+  padding: 14px 15px;
+  border: 1px solid #cbd9e1;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 3px 10px #20374b08;
+}
+.schedule-day-controls-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.schedule-day-controls-heading > div {
+  display: grid;
+  gap: 3px;
+}
+.schedule-day-controls-heading strong {
+  color: #203c54;
+  font-size: 14px;
+  font-weight: 800;
+}
+.schedule-day-controls-heading small {
+  color: #607687;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.schedule-day-start-note {
+  flex: 0 0 auto;
+  padding: 6px 9px;
+  border: 1px solid #d2e1ea;
+  border-radius: 999px;
+  background: #f1f7fb;
+  color: #42647c;
+  font-size: 11px;
+  font-weight: 700;
+}
+.schedule-day-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.schedule-day-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-width: 58px;
+  padding: 8px 11px;
+  border: 1px solid #cbd7df;
+  border-radius: 9px;
+  background: #f7f9fa;
+  color: #637583;
+  cursor: pointer;
+  transition: background .15s ease, border-color .15s ease, color .15s ease;
+}
+.schedule-day-toggle.visible {
+  border-color: #8ebbd7;
+  background: #e9f4fb;
+  color: #1e5578;
+}
+.schedule-day-toggle:hover:not(:has(input:disabled)) {
+  border-color: #5b9ac2;
+}
+.schedule-day-toggle input {
+  width: 15px;
+  height: 15px;
+  margin: 0;
+  accent-color: #176fc1;
+  cursor: pointer;
+}
+.schedule-day-toggle span {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .01em;
+}
+.schedule-day-toggle input:disabled {
+  cursor: default;
+}
+.schedule-day-toggle:has(input:disabled) {
+  cursor: default;
+}
+.schedule-day-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin: 0;
+  padding: 9px 11px;
+  border-radius: 8px;
+  background: #f3f7fa;
+  color: #536b7c;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.schedule-day-hint span {
+  flex: 0 0 auto;
+  color: #2876a7;
+  font-weight: 800;
+}
+@media (max-width: 520px) {
+  .schedule-day-controls-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
