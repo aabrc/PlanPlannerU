@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import planData from "./data/plan.json";
+import planData from "./data/plan.json";\nimport AcademicIndex from "./components/AcademicIndex";
 import { EXTERNAL_INFO } from "./data/externalRequirements";
 import {
   downloadBackup,
@@ -25,7 +25,7 @@ const STATUS_LABEL: Record<CourseStatus, string> = {
   approved: "Aprobada"
 };
 
-type Page = "home" | "plan" | "schedule" | "meta" | "requirements";
+type Page = "home" | "plan" | "schedule" | "meta" | "requirements" | "index";
 type Filter = "all" | "pending" | "inprogress" | "approved" | "blocked";
 
 function courseList(): Course[] {
@@ -357,7 +357,7 @@ function App() {
             ["plan", "Pensum"],
             ["schedule", "Mi horario"],
             ["requirements", "Requisitos"],
-            ["meta", "Mi meta"]
+            ["meta", "Mi meta"],\n            ["index", "Mi índice"]
           ] as [Page, string][]).map(([id, label]) => (
             <button key={id} type="button" className={page === id ? "nav-button active" : "nav-button"} onClick={() => setPage(id)}>
               {label}
@@ -480,7 +480,7 @@ function App() {
           </>
         )}
 
-        {page === "requirements" && (
+        {page === "index" && (\n          <AcademicIndex\n            periods={PLAN.periods}\n            groups={PLAN.groups}\n            courses={ALL_COURSES}\n            selections={planner.selections}\n            gradeAttempts={planner.gradeAttempts}\n            onGradeAttemptsChange={(gradeAttempts) => persistState({ ...planner, gradeAttempts })}\n          />\n        )}\n\n        {page === "requirements" && (
           <>
             <PageHeading eyebrow="REVISIÓN ACADÉMICA" title="Requisitos externos" description="MAT311 e ILE203 están reconocidos como cumplidos por tu examen de admisión. Los demás códigos requieren confirmación." />
             <div className="requirements-list">
