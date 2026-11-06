@@ -119,8 +119,8 @@ export default function ScheduleCalendar({ events, onChange }: { events: Schedul
   const scheduled = useMemo(() => events.filter(hasSchedule), [events]);
   const unscheduled = useMemo(() => events.filter((event) => event.courseCode && !hasSchedule(event)), [events]);
   const viewHeight = ((viewEnd - viewStart) / 60) * HOUR_HEIGHT;
-  const timeTicks: number[] = [];
-  for (let minute = Math.ceil(viewStart / 60) * 60; minute < viewEnd; minute += 60) {
+  const timeTicks: number[] = [viewStart];
+  for (let minute = (Math.floor(viewStart / 60) + 1) * 60; minute < viewEnd; minute += 60) {
     timeTicks.push(minute);
   }
   const daySegments = DAYS.map((_, index) => buildVisibleSegments(events, index, viewStart, viewEnd));
