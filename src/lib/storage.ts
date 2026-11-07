@@ -55,7 +55,7 @@ function finiteNumber(value: unknown): number | undefined {
 function normalizeClock(value: unknown, allowEndOfDay = false): string | undefined {
   if (typeof value !== "string" || value === "") return value === "" ? "" : undefined;
   if (allowEndOfDay && value === "24:00") return value;
-  return /^([01]\\d|2[0-3]):[0-5]\\d$/.test(value) ? value : undefined;
+  return /^([01]\d|2[0-3]):[0-5]\d$/.test(value) ? value : undefined;
 }
 
 function normalizeCourseStates(value: unknown): Record<string, CourseStatus> {
