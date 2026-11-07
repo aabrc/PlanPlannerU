@@ -63,6 +63,10 @@ export function hasPlannerData(state: PlannerState): boolean {
     state.meta.gpa ||
     Number(state.meta.internship) > 0
   );
+  const hasCustomScheduleView =
+    state.scheduleView.start !== 360 ||
+    state.scheduleView.end !== 1200 ||
+    state.scheduleView.lastVisibleDay !== 6;
 
   return hasCourseStatus ||
     Object.keys(state.selections).length > 0 ||
@@ -70,7 +74,8 @@ export function hasPlannerData(state: PlannerState): boolean {
     state.gradeAttempts.length > 0 ||
     Object.keys(state.advisorCourseProfiles || {}).length > 0 ||
     hasManualExternal ||
-    hasMeta;
+    hasMeta ||
+    hasCustomScheduleView;
 }
 
 export function decideSyncAction(local: PlannerState, remote: PlannerState): SyncDecision {
