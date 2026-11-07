@@ -161,6 +161,14 @@ async function readRemote(
   };
 }
 
+export async function getCloudPlannerRecord(
+  client: PlannerSupabaseClient,
+  userId: string,
+  externalCodes: string[]
+): Promise<CloudPlannerRecord | null> {
+  return readRemote(client, userId, externalCodes);
+}
+
 function conflict(remote: CloudPlannerRecord, reason: SyncConflictReason): PlannerSyncResult {
   return {
     status: "conflict",
