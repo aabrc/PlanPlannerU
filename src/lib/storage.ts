@@ -5,7 +5,9 @@ import type {
   AdvisorReadiness,
   CourseDifficultyOverride,
   CourseStatus,
-  PlannerState
+  GradeAttempt,
+  PlannerState,
+  ScheduleEvent
 } from "../types";
 
 export const STORAGE_KEY = "itt2020_pensum_tracker_v2";
