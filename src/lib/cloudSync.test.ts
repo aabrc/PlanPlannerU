@@ -104,6 +104,20 @@ describe("cloud planner synchronization decisions", () => {
     expect(decideSyncAction(local, remote)).toBe("conflict");
   });
 
+  it("does not upload stale local progress over a newer empty cloud state", () => {
+    const local = { ...blankState(), courseStates: { ICC103: "approved" as const }, _syncRevision: 4 };
+    const remote = { ...blankState(), _syncRevision: 5 };
+
+    expect(decideSyncAction(local, remote)).toBe("conflict");
+  });
+
+  it("does not silently download over an empty local state with a stale revision", () => {
+    const local = { ...blankState(), _syncRevision: 4 };
+    const remote = { ...blankState(), courseStates: { ITT112: "approved" as const }, _syncRevision: 5 };
+
+    expect(decideSyncAction(local, remote)).toBe("conflict");
+  });
+
   it("marks equal revisions and equal planner content as synchronized", () => {
     const local = { ...blankState(), courseStates: { ICC103: "approved" as const }, _syncRevision: 4 };
     const remote = { ...blankState(), courseStates: { ICC103: "approved" as const }, _syncRevision: 4 };
