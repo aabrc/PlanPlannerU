@@ -128,8 +128,6 @@ export default function ScheduleCalendar({
   const scheduled = useMemo(() => events.filter(hasSchedule), [events]);
   const unscheduled = useMemo(() => events.filter((event) => event.courseCode && !hasSchedule(event)), [events]);
   const visibleDays = DAYS.slice(0, scheduleView.lastVisibleDay + 1);
-  const viewHeight = ((viewEnd - viewStart) / 60) * HOUR_HEIGHT;
-  const printViewHeight = ((viewEnd - viewStart) / 60) * PRINT_HOUR_HEIGHT;
   // Build actual hour boundaries from the selected start through the selected end.
   // Partial first/last hours remain proportional, so labels and grid lines stay aligned.
   const timeBoundaries: number[] = [viewStart];
@@ -152,8 +150,8 @@ export default function ScheduleCalendar({
   });
   // The selected end time determines the final boundary, so extending "Hasta"
   // adds visible hour cells and increases the calendar and PDF height together.
-  const calculatedViewHeight = timeSlots.reduce((total, slot) => total + slot.screenHeight, 0);
-  const calculatedPrintViewHeight = timeSlots.reduce((total, slot) => total + slot.printHeight, 0);
+  const viewHeight = timeSlots.reduce((total, slot) => total + slot.screenHeight, 0);
+  const printViewHeight = timeSlots.reduce((total, slot) => total + slot.printHeight, 0);
   const dayEntries = visibleDays.map((day, index) => ({
     day,
     dayIndex: index,
