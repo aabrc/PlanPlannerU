@@ -82,7 +82,6 @@ function approvedCredits(plan: CurriculumPlan, state: PlannerState): number {
 
 function estimateDifficulty(
   course: Course,
-  electiveGroupNames: string[],
   override?: CourseDifficultyOverride
 ): CourseDifficultyEstimate {
   const overrideScores: Record<CourseDifficultyOverride, number> = {
@@ -111,13 +110,6 @@ function estimateDifficulty(
     score = metadata.difficulty;
   } else if (metadata?.courseType === "lab" || course.credits === 0 || /laboratorio/i.test(course.name)) {
     score = 2;
-  } else if (metadata?.courseType === "language" || course.code.startsWith("ILE")) {
-    // Language courses often have a lighter technical load; credits remain separate.
-    score = 1.95;
-  } else if (metadata?.courseType === "elective" ||
-      (electiveGroupNames.length > 0 && !electiveGroupNames.some((name) => /profesional/i.test(name)))) {
-    // General electives are often a lighter option, but this is only a starting estimate.
-    score = electiveGroupNames.some((name) => /deporte/i.test(name)) ? 1.45 : 2.05;
   } else {
     const description = (course.code + " " + course.name).normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "").toLowerCase();
@@ -128,9 +120,9 @@ function estimateDifficulty(
     } else if (/programacion|algoritmo|estructura de datos|base de datos|redes|seguridad|sistemas|telecomunicacion|comunicacion|automatizacion|centro de datos/.test(description) ||
         /^(ICC|ITT)/.test(course.code)) {
       score = 3.65;
-    } else if (/^(LET|FIL|HG|ART|LIT|CHU|ET|CN|ESG)/.test(course.code)) {
-      score = 2.55;
     } else {
+      // No subject family (including languages or electives) is presumed easy.
+      // Without stronger evidence, use a neutral starting point.
       score = 2.8;
     }
   }
@@ -217,15 +209,6 @@ export function buildAcademicAdvice(
       .map((course) => [course.code, course])
   ).values());
 
-  const groupNamesByCourse = new Map<string, string[]>();
-  for (const group of plan.groups) {
-    for (const course of group.options) {
-      const names = groupNamesByCourse.get(course.code) || [];
-      names.push(group.name);
-      groupNamesByCourse.set(course.code, names);
-    }
-  }
-
   const dependents = new Map<string, Set<string>>();
   for (const course of candidates) {
     for (const requirement of course.req || []) {
@@ -275,10 +258,8 @@ export function buildAcademicAdvice(
         coursePeriodIndex < currentPeriodIndex;
       const directUnlocks = (dependents.get(course.code) || new Set<string>()).size;
       const unlocks = countDownstream(course.code, dependents);
-      const groupNames = groupNamesByCourse.get(course.code) || [];
       const difficulty = estimateDifficulty(
         course,
-        groupNames,
         state.courseDifficultyOverrides?.[course.code]
       );
       const fitsTarget = course.credits === 0 ||
