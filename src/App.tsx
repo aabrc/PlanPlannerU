@@ -11,6 +11,7 @@ import { buildAcademicAdvice } from "./lib/academicAdvisor";
 import { buildHomeScheduleSummary } from "./lib/scheduleSummary";
 import { isSupabaseConfigured, supabase } from "./lib/supabase";
 import {
+  hasPlannerData,
   overwriteCloudWithLocal,
   syncPlannerState
 } from "./lib/cloudSync";
@@ -223,7 +224,7 @@ function App() {
         setPlanner(result.state);
         setSyncMessage("Tu progreso local se guardó en la nube. Revisión " + result.revision + ".");
       } else if (result.status === "downloaded") {
-        downloadBackup(planner);
+        if (hasPlannerData(planner)) downloadBackup(planner);
         setPlanner(result.state);
         setSyncMessage("Se descargó la versión de la nube. Antes se generó un respaldo local.");
       } else if (result.status === "synced") {
@@ -252,7 +253,7 @@ function App() {
     if (!accepted) return;
 
     try {
-      downloadBackup(planner);
+      if (hasPlannerData(planner)) downloadBackup(planner);
       setPlanner(syncConflict.remoteState);
       setSyncConflict(null);
       setSyncMessage("Se conservó la versión de la nube. Tu versión anterior quedó guardada en un respaldo JSON.");
