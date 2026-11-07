@@ -39,7 +39,6 @@ const emptyDraft = (): Draft => ({ id: "", courseCode: "", title: "", days: [], 
 const toMinutes = (value?: string) => { const [h, m] = (value || "00:00").split(":").map(Number); return h * 60 + m; };
 const fromMinutes = (value: number) => `${String(Math.floor(value / 60) % 24).padStart(2, "0")}:${String(value % 60).padStart(2, "0")}`;
 const TIME_OPTIONS = Array.from({ length: 49 }, (_, index) => index * 30);
-const MINUTE_OPTIONS = Array.from({ length: 60 }, (_, index) => index);
 const PRINT_HOUR_HEIGHT = 24;
 const formatAxisMinutes = (value: number) => value === 1440 ? "24:00" : fromMinutes(value);
 const formatClock = (value: number) => {
@@ -298,7 +297,7 @@ export default function ScheduleCalendar({
           <fieldset className="schedule-days-field"><legend>Días de la semana</legend><div className="schedule-day-choices">{DAYS.map((day) => <label key={day.id}><input type="checkbox" checked={draft.days.includes(day.id)} onChange={(event) => setDraft({ ...draft, days: event.target.checked ? [...draft.days, day.id] : draft.days.filter((id) => id !== day.id) })} />{day.name}</label>)}</div></fieldset>
           <div className="schedule-time-fields">
             <TimePicker label="Hora de inicio" value={draft.start} onChange={(start) => setDraft({ ...draft, start })} />
-            <TimePicker label="Hora de finalización" value={draft.end} onChange={(end) => setDraft({ ...draft, end })} />
+            <TimePicker label="Hora de finalización" value={draft.end} onChange={(end) => setDraft({ ...draft, end })} allowEndOfDay />
           </div>
           {message && <p className="schedule-form-message" role="alert">{message}</p>}
           <div className="schedule-modal-actions">{draft.id && !draft.courseCode && <button type="button" className="schedule-delete-button" onClick={remove}>Eliminar actividad</button>}<span /><button type="button" className="secondary-button" onClick={() => setDraft(null)}>Cancelar</button><button type="submit" className="primary-button">Guardar horario</button></div>
@@ -309,42 +308,45 @@ export default function ScheduleCalendar({
 }
 
 
-function TimePicker({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
-  const totalMinutes = toMinutes(value);
-  const hour24 = Math.floor(totalMinutes / 60) % 24;
-  const hour12 = hour24 % 12 || 12;
-  const minute = totalMinutes % 60;
-  const period = hour24 >= 12 ? "PM" : "AM";
+function getDraftTimeOptions(value: string, allowEndOfDay: boolean) {
+  const currentMinute = toMinutes(value);
+  const options = TIME_OPTIONS
+    .filter((minute) => minute < 1440 || allowEndOfDay)
+    .map((minute) => ({
+      minute,
+      value: minute === 1440 ? "24:00" : fromMinutes(minute)
+    }));
 
-  const update = (nextHour: number, nextMinute: number, nextPeriod: "AM" | "PM") => {
-    const normalizedHour = (nextHour % 12) + (nextPeriod === "PM" ? 12 : 0);
-    onChange(`${String(normalizedHour).padStart(2, "0")}:${String(nextMinute).padStart(2, "0")}`);
-  };
+  if (!options.some((option) => option.value === value)) {
+    options.push({ minute: currentMinute, value });
+  }
+
+  return options.sort((a, b) => a.minute - b.minute);
+}
+
+function TimePicker({
+  label,
+  value,
+  onChange,
+  allowEndOfDay = false
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  allowEndOfDay?: boolean;
+}) {
+  const options = getDraftTimeOptions(value, allowEndOfDay);
 
   return (
-    <fieldset className="schedule-time-picker">
-      <legend>{label}</legend>
-      <div className="schedule-time-picker-controls">
-        <label>
-          <span>Hora</span>
-          <select value={hour12} onChange={(event) => update(Number(event.target.value), minute, period)}>
-            {Array.from({ length: 12 }, (_, index) => index + 1).map((hour) => <option value={hour} key={hour}>{hour}</option>)}
-          </select>
-        </label>
-        <label>
-          <span>Minutos</span>
-          <select value={minute} onChange={(event) => update(hour12, Number(event.target.value), period)}>
-            {MINUTE_OPTIONS.map((item) => <option value={item} key={item}>{String(item).padStart(2, "0")}</option>)}
-          </select>
-        </label>
-        <label>
-          <span>Período</span>
-          <select value={period} onChange={(event) => update(hour12, minute, event.target.value as "AM" | "PM")}>
-            <option value="AM">a. m.</option>
-            <option value="PM">p. m.</option>
-          </select>
-        </label>
-      </div>
-    </fieldset>
+    <label className="schedule-time-select">
+      <span>{label}</span>
+      <select value={value} onChange={(event) => onChange(event.target.value)}>
+        {options.map((option) => (
+          <option value={option.value} key={option.value}>
+            {formatClock(option.minute)}
+          </option>
+        ))}
+      </select>
+    </label>
   );
 }
