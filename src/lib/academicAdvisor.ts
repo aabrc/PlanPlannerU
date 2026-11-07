@@ -1,4 +1,5 @@
 import type {
+  AdvisorChallengeFactor,
   AdvisorCourseProfile,
   Course,
   CourseDifficultyOverride,
@@ -38,6 +39,14 @@ export interface AcademicAdvice {
   remainingCredits: number;
   paceLabel: string;
 }
+
+const CHALLENGE_FACTOR_LABELS: Record<AdvisorChallengeFactor, string> = {
+  foundations: "fundamentos previos",
+  "teaching-method": "metodología de enseñanza",
+  assessments: "evaluaciones",
+  "practical-skills": "práctica y desarrollo de habilidades",
+  "time-constraints": "tiempo y otras responsabilidades"
+};
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
@@ -308,6 +317,12 @@ export function buildAcademicAdvice(
         reasons.push("Según tu experiencia, has podido manejar su carga");
       } else if (profile.experience === "as-expected") {
         reasons.push("Su dificultad coincidió con tus expectativas");
+      }
+      if (profile.challengeFactors?.length) {
+        const factorLabels = profile.challengeFactors.map(
+          (factor) => CHALLENGE_FACTOR_LABELS[factor]
+        );
+        reasons.push("Factores que identificaste: " + factorLabels.join(", "));
       }
 
       return {
