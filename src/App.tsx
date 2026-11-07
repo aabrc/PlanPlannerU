@@ -75,6 +75,23 @@ function normalizeText(value: string): string {
   return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 }
 
+function normalizeSearchText(value: string): string {
+  return normalizeText(value).replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+function courseSearchText(course: Course): string {
+  const requirementCodes = [...(course.req || []), ...(course.additional || [])];
+  const requirementNames = requirementCodes.map((code) => COURSE_BY_CODE.get(code)?.name || "");
+  return [
+    course.code,
+    course.name,
+    course.id || "",
+    course.credits + " créditos",
+    requirementCodes.join(" "),
+    requirementNames.join(" ")
+  ].join(" ");
+}
+
 function approvedCredits(state: PlannerState): number {
   const counted = new Set<string>();
   let total = 0;
@@ -172,9 +189,15 @@ function App() {
   const inProgressCount = Object.values(planner.courseStates).filter((value) => value === "inprogress").length;
   const approvedCount = Object.values(planner.courseStates).filter((value) => value === "approved").length;
 
-  const query = normalizeText(search);
-  const courseMatches = (course: Course) => {
-    if (query && !normalizeText(course.code + " " + course.name).includes(query)) return false;
+  const query = normalizeSearchText(search);
+  const queryTerms = query ? query.split(/\s+/).filter(Boolean) : [];
+  const matchesAllSearchTerms = (value: string) => {
+    const searchableText = normalizeSearchText(value);
+    return queryTerms.every((term) => searchableText.includes(term));
+  };
+  const courseMatchesSearch = (course: Course) =>
+    queryTerms.length === 0 || matchesAllSearchTerms(courseSearchText(course));
+  const courseMatchesStatus = (course: Course) => {
     const status = statusOf(planner, course.code);
     const blocked = status === "pending" && blockersFor(course, planner).length > 0;
     if (filter === "all") return true;
@@ -183,6 +206,9 @@ function App() {
     if (filter === "approved") return status === "approved";
     return blocked;
   };
+  const courseMatches = (course: Course) =>
+    courseMatchesSearch(course) && courseMatchesStatus(course);
+  const hasActiveCatalogFilters = queryTerms.length > 0 || filter !== "all";
 
   const persistState = (next: PlannerState) => setPlanner(next);
 
@@ -266,14 +292,29 @@ function App() {
     });
   };
 
-  const visiblePeriods = PLAN.periods.filter((period) => {
-    if (!query) return true;
-    const periodCourses = [
-      ...period.courses,
-      ...period.groups.flatMap((id) => GROUP_BY_ID.get(id)?.options || [])
-    ];
-    return periodCourses.some((course) => normalizeText(course.code + " " + course.name).includes(query));
-  });
+  const visiblePeriods = PLAN.periods.map((period) => {
+    const courses = period.courses.filter(courseMatches);
+    const groups = period.groups
+      .map((id) => GROUP_BY_ID.get(id))
+      .filter((group): group is ElectiveGroup => Boolean(group))
+      .map((group) => {
+        const groupNameMatches =
+          queryTerms.length === 0 || matchesAllSearchTerms(group.name + " " + group.id);
+        const options = group.options.filter((course) => {
+          const textMatches = groupNameMatches || courseMatchesSearch(course);
+          return textMatches && courseMatchesStatus(course);
+        });
+        return { group, options };
+      })
+      .filter((entry) => entry.options.length > 0);
+
+    return { period, courses, groups };
+  }).filter((entry) =>
+    !hasActiveCatalogFilters || entry.courses.length > 0 || entry.groups.length > 0
+  );
+  const searchResultCount = visiblePeriods.reduce((total, entry) =>
+    total + entry.courses.length + entry.groups.reduce((groupTotal, group) => groupTotal + group.options.length, 0), 0
+  );
 
   const activeCourses = ALL_COURSES.filter((course) => statusOf(planner, course.code) !== "pending").length;
 
@@ -415,15 +456,12 @@ function App() {
     );
   };
 
-  const renderElective = (group: ElectiveGroup) => {
+  const renderElective = (group: ElectiveGroup, matchingOptions: Course[]) => {
     const selectedCode = planner.selections[group.id] || "";
     const selected = selectedCode ? COURSE_BY_CODE.get(selectedCode) : undefined;
     const selectedStatus = selected ? statusOf(planner, selected.code) : "pending";
     const done = !!selected && selectedStatus === "approved" && selected.credits >= group.minCredits;
-    const options = group.options.filter((course) => {
-      if (!query) return true;
-      return normalizeText(course.code + " " + course.name).includes(query);
-    });
+    const selectedOutsideMatches = !!selected && !matchingOptions.some((course) => course.code === selected.code);
 
     return (
       <div className="elective-card" key={group.id}>
@@ -438,7 +476,16 @@ function App() {
           onChange={(event) => selectElective(group, event.target.value)}
         >
           <option value="">Selecciona una electiva…</option>
-          {options.map((course) => <option value={course.code} key={course.code}>{course.code} · {course.name} ({course.credits} cr.)</option>)}
+          {selected && selectedOutsideMatches && (
+            <optgroup label="Selección actual">
+              <option value={selected.code}>{selected.code} · {selected.name} (seleccionada)</option>
+            </optgroup>
+          )}
+          {matchingOptions.length > 0 && (
+            <optgroup label={query ? "Coincidencias" : "Opciones disponibles"}>
+              {matchingOptions.map((course) => <option value={course.code} key={course.code}>{course.code} · {course.name} ({course.credits} cr.)</option>)}
+            </optgroup>
+          )}
         </select>
         {selected && (
           <div className="selected-elective">
@@ -542,28 +589,51 @@ function App() {
           <>
             <PageHeading eyebrow="DESARROLLO" title="Pensum ITT-2020" description="Consulta tus asignaturas, registra su estado y elige las electivas correspondientes." />
             <div className="plan-toolbar">
-              <input className="search-input" type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar por código o nombre…" aria-label="Buscar asignatura" />
-              <div className="filter-row">
-                {([
-                  ["all", "Todas"],
-                  ["pending", "Disponibles"],
-                  ["inprogress", "En curso"],
-                  ["approved", "Aprobadas"],
-                  ["blocked", "Bloqueadas"]
-                ] as [Filter, string][]).map(([id, label]) => (
-                  <button key={id} type="button" className={filter === id ? "filter-button active" : "filter-button"} onClick={() => setFilter(id)}>{label}</button>
-                ))}
+              <div className="plan-search-group">
+                <label htmlFor="pensum-search">Buscar en todo el pensum</label>
+                <div className="plan-search-control">
+                  <span className="plan-search-icon" aria-hidden="true">⌕</span>
+                  <input
+                    id="pensum-search"
+                    type="search"
+                    value={search}
+                    onChange={(event) => setSearch(event.target.value)}
+                    placeholder="Código, nombre, ID, prerrequisito o electiva…"
+                    aria-label="Buscar en todo el pensum"
+                    autoComplete="off"
+                  />
+                  {search && <button type="button" onClick={() => setSearch("")} aria-label="Limpiar búsqueda">×</button>}
+                </div>
+                <small>Admite varias palabras y no distingue mayúsculas ni tildes.</small>
+              </div>
+              <div className="plan-filter-group">
+                <span className="plan-filter-label">Filtrar por estado</span>
+                <div className="filter-row">
+                  {([
+                    ["all", "Todas"],
+                    ["pending", "Disponibles"],
+                    ["inprogress", "En curso"],
+                    ["approved", "Aprobadas"],
+                    ["blocked", "Bloqueadas"]
+                  ] as [Filter, string][]).map(([id, label]) => (
+                    <button key={id} type="button" className={filter === id ? "filter-button active" : "filter-button"} onClick={() => setFilter(id)}>{label}</button>
+                  ))}
+                </div>
               </div>
             </div>
-            {visiblePeriods.map((period) => {
+            {hasActiveCatalogFilters && (
+              <p className="plan-results-summary" aria-live="polite">
+                <strong>{searchResultCount}</strong> {searchResultCount === 1 ? "resultado encontrado" : "resultados encontrados"}
+                {query ? ` para “${search}”` : ""}
+                {filter !== "all" ? ` · Filtro: ${filter === "pending" ? "Disponibles" : filter === "inprogress" ? "En curso" : filter === "approved" ? "Aprobadas" : "Bloqueadas"}` : ""}
+              </p>
+            )}
+            {visiblePeriods.length > 0 ? visiblePeriods.map(({ period, courses, groups }) => {
               const summary = periodSummary(period, planner);
-              const isOpen = expanded.includes(period.id) || !!query;
-              const courses = period.courses.filter(courseMatches);
-              const groups = period.groups.map((id) => GROUP_BY_ID.get(id)).filter(Boolean) as ElectiveGroup[];
-              const electiveGroups = groups.map((group) => (
-                <div className="course-grid" key={group.id}>{renderElective(group)}</div>
+              const isOpen = expanded.includes(period.id) || hasActiveCatalogFilters;
+              const electiveGroups = groups.map(({ group, options }) => (
+                <div className="course-grid" key={group.id}>{renderElective(group, options)}</div>
               ));
-              if (query && !courses.length && !groups.some((group) => group.options.some((course) => normalizeText(course.code + " " + course.name).includes(query)))) return null;
               return (
                 <details className={summary.complete ? "period-card complete" : "period-card"} key={period.id} open={isOpen} onToggle={(event) => {
                   togglePeriod(period.id, (event.currentTarget as HTMLDetailsElement).open);
@@ -573,12 +643,21 @@ function App() {
                     <span className="period-progress">{summary.credits} / {summary.target} cr.</span>
                   </summary>
                   <div className="period-body">
-                    {courses.length ? <div className="course-grid">{courses.map(renderCourse)}</div> : <p className="empty-message">No hay asignaturas que coincidan con este filtro.</p>}
+                    {courses.length > 0 && <div className="course-grid">{courses.map(renderCourse)}</div>}
                     {groups.length > 0 && <div className="elective-section"><h3>Electivas de este período</h3>{electiveGroups}</div>}
                   </div>
                 </details>
               );
-            })}
+            }) : (
+              <section className="plan-no-results">
+                <span aria-hidden="true">⌕</span>
+                <h2>No encontramos coincidencias</h2>
+                <p>Prueba con el código, el nombre, el identificador, un prerrequisito o el nombre de un grupo electivo. También puedes cambiar el filtro de estado.</p>
+                <button type="button" className="secondary-button" onClick={() => { setSearch(""); setFilter("all"); }}>
+                  Limpiar búsqueda y filtros
+                </button>
+              </section>
+            )}
             <p className="footnote">Los prerrequisitos externos ICC133, ILE311, ILE322, ITT102, 1ITT102 y MAT134 se mantienen como códigos independientes hasta confirmar su equivalencia.</p>
           </>
         )}
