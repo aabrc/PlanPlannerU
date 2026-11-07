@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { Session, SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "../types/database";
 import { buildAuthRedirectUrl, isValidEmailAddress } from "../lib/auth";
 import type { PlannerSyncResult } from "../lib/cloudSync";
 
@@ -9,7 +10,7 @@ interface AccountDialogProps {
   open: boolean;
   configured: boolean;
   session: Session | null;
-  supabaseClient: SupabaseClient | null;
+  supabaseClient: SupabaseClient<Database> | null;
   syncBusy: boolean;
   syncMessage: string;
   syncConflict: SyncConflict | null;
