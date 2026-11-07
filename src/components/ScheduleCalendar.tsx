@@ -112,12 +112,14 @@ export default function ScheduleCalendar({
   events,
   onChange,
   scheduleView,
-  onScheduleViewChange
+  onScheduleViewChange,
+  onReset
 }: {
   events: ScheduleEvent[];
   onChange: (events: ScheduleEvent[]) => void;
   scheduleView: ScheduleViewRange;
   onScheduleViewChange: (range: ScheduleViewRange) => void;
+  onReset: (events: ScheduleEvent[], range: ScheduleViewRange) => void;
 }) {
   const [draft, setDraft] = useState<Draft | null>(null);
   const [message, setMessage] = useState("");
@@ -166,6 +168,26 @@ export default function ScheduleCalendar({
     onChange(events.filter((event) => event.id !== draft.id));
     setDraft(null);
   };
+  const canResetSchedule = scheduled.length > 0 ||
+    viewStart !== 360 ||
+    viewEnd !== 1200 ||
+    scheduleView.lastVisibleDay !== 6;
+  const resetSchedule = () => {
+    if (!canResetSchedule) return;
+    const accepted = window.confirm(
+      "¿Restablecer el horario semanal?\n\n" +
+      "Se eliminarán las actividades personales y se quitarán los días y las horas de las materias en curso. " +
+      "Las materias seguirán marcadas como En curso en el pensum y quedarán por organizar.\n\n" +
+      "La vista volverá a lunes–domingo, de 6:00 a. m. a 8:00 p. m."
+    );
+    if (!accepted) return;
+    const resetEvents = events
+      .filter((event) => Boolean(event.courseCode))
+      .map((event) => ({ ...event, days: [], start: "", end: "" }));
+    onReset(resetEvents, { start: 360, end: 1200, lastVisibleDay: 6 });
+    setDraft(null);
+    setMessage("");
+  };
 
   return (
     <section className="schedule-workspace">
@@ -190,6 +212,7 @@ export default function ScheduleCalendar({
             </select>
           </label>
           <button className="secondary-button" type="button" onClick={() => onScheduleViewChange({ ...scheduleView, start: 0, end: 1440, lastVisibleDay: 6 })} disabled={viewStart === 0 && viewEnd === 1440 && scheduleView.lastVisibleDay === 6}>Mostrar todo</button>
+          <button className="secondary-button schedule-reset-button" type="button" onClick={resetSchedule} disabled={!canResetSchedule}>Restablecer horario</button>
           <button className="primary-button" type="button" onClick={() => window.print()}>Exportar PDF</button>
         </div>
         <div className="schedule-day-controls" role="group" aria-label="Días que se muestran en el calendario">
