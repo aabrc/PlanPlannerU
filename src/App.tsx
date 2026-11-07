@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import planData from "./data/plan.json";
 import AcademicIndex from "./components/AcademicIndex";
 import AcademicAdvisor from "./components/AcademicAdvisor";
+import { calculateGraduationProjection } from "./lib/graduationProjection";
 import ScheduleCalendar from "./components/ScheduleCalendar";
 import { EXTERNAL_INFO } from "./data/externalRequirements";
 import { buildAcademicAdvice } from "./lib/academicAdvisor";
@@ -306,6 +307,7 @@ function App() {
   const activeCourses = ALL_COURSES.filter((course) => statusOf(planner, course.code) !== "pending").length;
 
   const academicAdvice = useMemo(() => buildAcademicAdvice(PLAN, planner), [planner]);
+  const graduationProjection = useMemo(() => calculateGraduationProjection(PLAN, planner), [planner]);
 
   const handleImport = async (file?: File) => {
     if (!file) return;
@@ -683,6 +685,27 @@ function App() {
                 <small>{planner.meta.internship}/320 horas registradas.</small>
               </section>
             </div>
+            <section className="paper-card graduation-projection">
+              <span className="eyebrow">ESCENARIO ORIENTATIVO</span>
+              <h2>Proyección de finalización</h2>
+              {graduationProjection.status === "needs-period" && (
+                <p>Selecciona tu período académico actual para estimar en qué período podrías completar el plan.</p>
+              )}
+              {graduationProjection.status === "complete" && (
+                <p>Has registrado los {PLAN.totalCredits} créditos del pensum. Revisa también tu índice académico y los requisitos de pasantía.</p>
+              )}
+              {graduationProjection.status === "projected" && (
+                <>
+                  <p><strong>{graduationProjection.periodsRemaining} {graduationProjection.periodsRemaining === 1 ? "período estimado restante" : "períodos estimados restantes"}</strong></p>
+                  <p>Final estimado: <strong>Año {graduationProjection.finishYear} · Período {graduationProjection.finishTerm}</strong>.</p>
+                  <p>{graduationProjection.remainingCredits} créditos pendientes, calculados a un ritmo de {graduationProjection.creditsPerTerm} créditos por período.</p>
+                  {graduationProjection.exceedsPlan && (
+                    <p className="blocker-text">Este escenario supera los 12 períodos incluidos en el pensum base.</p>
+                  )}
+                </>
+              )}
+              <small>Es una estimación matemática basada en los créditos pendientes y tu carga prevista. No garantiza que todas las asignaturas estén disponibles ni que se cumplan sus prerrequisitos.</small>
+            </section>
           </>
         )}
       </main>
