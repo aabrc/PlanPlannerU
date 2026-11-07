@@ -591,6 +591,7 @@ function App() {
               onChange={(scheduleEvents) => persistState({ ...planner, scheduleEvents })}
               scheduleView={planner.scheduleView}
               onScheduleViewChange={(scheduleView) => persistState({ ...planner, scheduleView })}
+              onReset={(scheduleEvents, scheduleView) => persistState({ ...planner, scheduleEvents, scheduleView })}
             />
           </>
         )}
