@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import type { Session } from "@supabase/supabase-js";
+import AccountDialog from "./components/AccountDialog";
 import planData from "./data/plan.json";
 import AcademicIndex from "./components/AcademicIndex";
 import AcademicAdvisor from "./components/AcademicAdvisor";
@@ -7,6 +9,7 @@ import ScheduleCalendar from "./components/ScheduleCalendar";
 import { EXTERNAL_INFO } from "./data/externalRequirements";
 import { buildAcademicAdvice } from "./lib/academicAdvisor";
 import { buildHomeScheduleSummary } from "./lib/scheduleSummary";
+import { isSupabaseConfigured, supabase } from "./lib/supabase";
 import {
   downloadBackup,
   loadPlannerState,
@@ -161,11 +164,26 @@ function App() {
   const [search, setSearch] = useState("");
   const [expanded, setExpanded] = useState<string[]>([planner.meta.currentPeriod || PLAN.periods[0].id]);
   const [toast, setToast] = useState("");
+  const [session, setSession] = useState<Session | null>(null);
+  const [showAccount, setShowAccount] = useState(false);
   const importRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!savePlannerState(planner)) setToast("No se pudo guardar. Exporta un respaldo para proteger tus cambios.");
   }, [planner]);
+
+  useEffect(() => {
+    if (!supabase) {
+      setSession(null);
+      return;
+    }
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      setSession(nextSession);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   useEffect(() => {
     try {
@@ -533,7 +551,16 @@ function App() {
             </button>
           ))}
         </nav>
-        <div className="cloud-state"><span className="cloud-dot" /> Sincronización: próxima etapa</div>
+        <button
+          className="account-trigger"
+          type="button"
+          onClick={() => setShowAccount(true)}
+          aria-label={session?.user.email ? "Cuenta: " + session.user.email : "Abrir mi cuenta"}
+          title={session?.user.email || "Mi cuenta"}
+        >
+          <span className={session ? "cloud-dot connected" : "cloud-dot"} aria-hidden="true" />
+          <span>{session?.user.email || "Mi cuenta"}</span>
+        </button>
       </header>
 
       <main className="content">
@@ -814,6 +841,13 @@ function App() {
         <span>PlanPlannerU · ITT-2020</span>
         <span>Progreso local · {activeCourses} asignaturas iniciadas o completadas</span>
       </footer>
+      <AccountDialog
+        open={showAccount}
+        configured={isSupabaseConfigured}
+        session={session}
+        supabaseClient={supabase}
+        onClose={() => setShowAccount(false)}
+      />
       {toast && <div className="toast" role="status">{toast}</div>}
     </div>
   );
