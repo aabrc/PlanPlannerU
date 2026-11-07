@@ -687,15 +687,15 @@ button, input, select, textarea { font-size: 14px; }
 .unscheduled-row strong { color: #344e62; font-size: 14px; }
 .unscheduled-row small { color: #6a6d62; font-size: 12px; margin-top: 4px; }
 .calendar-shell { overflow-x: auto; border: 1px solid #cbd9e1; border-radius: 13px; background: #fff; box-shadow: 0 4px 14px #20374b0b; }
-.calendar-grid-react { display: grid; grid-template-columns: 62px repeat(7,minmax(112px,1fr)); grid-template-rows: 58px 1152px; min-width: 850px; position: relative; }
+.calendar-grid-react { display: grid; grid-template-columns: 84px repeat(7,minmax(112px,1fr)); grid-template-rows: 58px 1152px; min-width: 872px; position: relative; }
 .calendar-corner-react { grid-column: 1; grid-row: 1; background: #edf4f8; border-bottom: 1px solid #cbd9e1; }
 .calendar-day-head { display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 3px; background: #edf4f8; border-left: 1px solid #d8e1e6; border-bottom: 1px solid #cbd9e1; }
 .calendar-day-head strong { color: #24445d; font-size: 13px; }
 .calendar-day-head small { color: #587184; font-size: 11px; }
 .calendar-time-axis { grid-column: 1; grid-row: 2; position: relative; background: #f7fafb; border-right: 1px solid #d8e1e6; }
-.calendar-time-axis span { position: absolute; right: 7px; transform: translateY(-50%); color: #5c7180; font-size: 10px; font-variant-numeric: tabular-nums; }
-.calendar-day-lane { grid-row: 2; position: relative; min-width: 0; border-left: 1px solid #e1e8ec; background: repeating-linear-gradient(to bottom,#fff 0,#fff 47px,#e7edf0 47px,#e7edf0 48px); }
-.calendar-hour-line { position: absolute; left: 0; right: 0; border-top: 1px solid #e7edf0; pointer-events: none; }
+.calendar-time-axis span { position: absolute; left: 2px; right: 2px; transform: translateY(-50%); color: #40596c; font-size: 10px; font-weight: 700; font-variant-numeric: tabular-nums; text-align: center; white-space: nowrap; }
+.calendar-day-lane { grid-row: 2; position: relative; min-width: 0; border-left: 1px solid #e1e8ec; background: #fff; }
+.calendar-hour-line { position: absolute; z-index: 0; left: 0; right: 0; border-top: 1px solid #dce5ea; pointer-events: none; }
 .calendar-event-react { position: absolute; z-index: 2; display: flex; flex-direction: column; align-items: flex-start; gap: 3px; overflow: hidden; padding: 5px 6px; border: 1px solid; border-left-width: 4px; border-radius: 6px; text-align: left; cursor: pointer; font-size: 10px; line-height: 1.3; box-shadow: 0 1px 3px #20374b12; }
 .calendar-event-react:hover { z-index: 5; filter: saturate(1.12); box-shadow: 0 3px 8px #20374b22; }
 .calendar-event-react strong { width: 100%; overflow-wrap: anywhere; font-size: 10px; }
@@ -944,14 +944,15 @@ button, input, select, textarea { font-size: 14px; }
   }
   .schedule-print-time-axis span {
     position: absolute;
-    right: 4px;
+    left: 1px;
+    right: 1px;
     transform: translateY(-50%);
     color: #40596c;
     font-size: 7px;
     font-variant-numeric: tabular-nums;
+    text-align: center;
     white-space: nowrap;
   }
-  .schedule-print-time-axis span:first-child { transform: translateY(0); }
   .schedule-print-day {
     grid-row: 2;
     position: relative;
