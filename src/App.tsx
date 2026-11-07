@@ -683,6 +683,7 @@ function App() {
                 </label>
                 <label className="form-field">Carga académica estimada por período
                   <select
+                    className="academic-load-select"
                     value={String(normalizeCreditsPerTerm(planner.meta.loadPerTerm))}
                     onChange={(event) => setMeta("loadPerTerm", event.target.value)}
                   >
