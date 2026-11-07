@@ -182,12 +182,17 @@ function App() {
 
   const query = normalizeSearchText(search);
   const queryTerms = query ? query.split(/\s+/).filter(Boolean) : [];
+  const exactCodeMatch =
+    queryTerms.length === 1 ? COURSE_BY_CODE.get(search.trim().toUpperCase()) : undefined;
   const matchesAllSearchTerms = (value: string) => {
     const searchableText = normalizeSearchText(value);
     return queryTerms.every((term) => searchableText.includes(term));
   };
-  const courseMatchesSearch = (course: Course) =>
-    queryTerms.length === 0 || matchesAllSearchTerms(courseSearchText(course));
+  const courseMatchesSearch = (course: Course) => {
+    if (queryTerms.length === 0) return true;
+    if (exactCodeMatch) return course.code === exactCodeMatch.code;
+    return matchesAllSearchTerms(courseSearchText(course));
+  };
   const courseMatchesStatus = (course: Course) => {
     const status = statusOf(planner, course.code);
     const blocked = status === "pending" && blockersFor(course, planner).length > 0;
