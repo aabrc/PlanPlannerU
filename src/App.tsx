@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import planData from "./data/plan.json";
 import AcademicIndex from "./components/AcademicIndex";
 import AcademicAdvisor from "./components/AcademicAdvisor";
-import { calculateGraduationProjection } from "./lib/graduationProjection";
+import { calculateGraduationProjection, normalizeCreditsPerTerm } from "./lib/graduationProjection";
 import ScheduleCalendar from "./components/ScheduleCalendar";
 import { EXTERNAL_INFO } from "./data/externalRequirements";
 import { buildAcademicAdvice } from "./lib/academicAdvisor";
@@ -363,12 +363,12 @@ function App() {
       if (Number.isFinite(hours)) {
         normalizedValue = String(Math.floor(Math.min(320, Math.max(0, hours))));
       }
-    } else if (key === "loadPerTerm" || key === "gpa") {
+    } else if (key === "loadPerTerm") {
+      normalizedValue = String(normalizeCreditsPerTerm(value));
+    } else if (key === "gpa") {
       const number = value.trim() === "" ? null : Number(value);
       if (number !== null && Number.isFinite(number)) {
-        const min = key === "gpa" ? 0 : 1;
-        const max = key === "gpa" ? 4 : 30;
-        normalizedValue = String(Math.min(max, Math.max(min, number)));
+        normalizedValue = String(Math.min(4, Math.max(0, number)));
       }
     }
 
@@ -682,7 +682,22 @@ function App() {
                   </select>
                 </label>
                 <label className="form-field">Carga académica estimada por período
-                  <input type="number" min="1" max="30" value={planner.meta.loadPerTerm} onChange={(event) => setMeta("loadPerTerm", event.target.value)} />
+                  <select
+                    value={String(normalizeCreditsPerTerm(planner.meta.loadPerTerm))}
+                    onChange={(event) => setMeta("loadPerTerm", event.target.value)}
+                  >
+                    <optgroup label="Carga regular · hasta 22 créditos">
+                      {Array.from({ length: 22 }, (_, index) => index + 1).map((credits) => (
+                        <option value={String(credits)} key={credits}>{credits} créditos</option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="Carga ampliada · requiere autorización">
+                      {Array.from({ length: 8 }, (_, index) => index + 23).map((credits) => (
+                        <option value={String(credits)} key={credits}>{credits} créditos</option>
+                      ))}
+                    </optgroup>
+                  </select>
+                  <small>Selecciona entre 1 y 22 créditos para una carga regular. De 23 a 30, utiliza únicamente la carga ampliada cuando tengas la autorización correspondiente.</small>
                 </label>
                 <label className="form-field">Índice académico acumulado
                   <input type="number" min="0" max="4" step="0.1" value={planner.meta.gpa} onChange={(event) => setMeta("gpa", event.target.value)} placeholder="Ej. 3.5" />
