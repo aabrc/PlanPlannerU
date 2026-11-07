@@ -229,7 +229,11 @@ function App() {
           downloadBackup(planner, "PlanPlannerU-respaldo-local.json");
         }
         setPlanner(result.state);
-        setSyncMessage("Se descargó la versión de la nube. Antes se generó un respaldo local.");
+        setSyncMessage(
+          hasPlannerData(planner)
+            ? "Se descargó la versión de la nube. Tu progreso local anterior quedó guardado en un respaldo JSON."
+            : "Se descargó la versión actual de la nube."
+        );
       } else if (result.status === "synced") {
         setPlanner(result.state);
         setSyncMessage("Este dispositivo y la nube ya tienen la misma versión (revisión " + result.revision + ").");
@@ -329,7 +333,11 @@ function App() {
       if (result.status === "uploaded") {
         setPlanner(result.state);
         setSyncConflict(null);
-        setSyncMessage("Se conservó este dispositivo. La versión anterior de la nube se descargó como respaldo y la cuenta quedó en la revisión " + result.revision + ".");
+        setSyncMessage(
+          hasPlannerData(syncConflict.remoteState)
+            ? "Se conservó este dispositivo. La versión anterior de la nube se descargó como respaldo y la cuenta quedó en la revisión " + result.revision + "."
+            : "Se conservó este dispositivo y la cuenta quedó en la revisión " + result.revision + "."
+        );
       } else if (result.status === "conflict") {
         if (hasPlannerData(result.remoteState)) {
           downloadBackup(
@@ -338,7 +346,11 @@ function App() {
           );
         }
         setSyncConflict(result);
-        setSyncMessage("La nube cambió durante la operación. No se sobrescribió; se descargó un respaldo de la nueva versión. Revisa de nuevo las dos versiones.");
+        setSyncMessage(
+          hasPlannerData(result.remoteState)
+            ? "La nube cambió durante la operación. No se sobrescribió; se descargó un respaldo de la nueva versión. Revisa de nuevo las dos versiones."
+            : "La nube cambió durante la operación. No se sobrescribió; revisa de nuevo las dos versiones."
+        );
       } else {
         setSyncMessage("No había datos que guardar en la nube.");
       }
