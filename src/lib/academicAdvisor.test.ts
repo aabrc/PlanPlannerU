@@ -179,3 +179,27 @@ describe("buildAcademicAdvice: electivas, laboratorios y estados", () => {
     expect(blocked?.blockers).toContain("ILE311");
   });
 });
+
+
+describe("buildAcademicAdvice: cronología del pensum", () => {
+  it("detecta materias rezagadas por año y período aunque el arreglo esté desordenado", () => {
+    const curriculum = planWith([
+      period("y1p2", 1, 2, [course("CURRENT_PERIOD_COURSE")]),
+      period("y1p1", 1, 1, [course("OLDER_BLOCKED", ["UNKNOWN_EXTERNAL_REQ"])]),
+      period("y1p3", 1, 3, [course("FUTURE_PERIOD_COURSE")])
+    ]);
+
+    const advice = buildAcademicAdvice(
+      curriculum,
+      stateAt("y1p2")
+    );
+
+    const older = advice.laggedCourses.find(
+      (item) => item.course.code === "OLDER_BLOCKED"
+    );
+
+    expect(older).toBeDefined();
+    expect(older?.canEnroll).toBe(false);
+    expect(older?.blockers).toContain("UNKNOWN_EXTERNAL_REQ");
+  });
+});
