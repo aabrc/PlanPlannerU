@@ -1509,3 +1509,90 @@ button, input, select, textarea { font-size: 14px; }
   .plan-filter-group .filter-row { align-items: stretch; }
   .plan-filter-group .filter-button { flex: 1 1 auto; }
 }
+
+
+/* Workload-aware academic advisor */
+.advisor-load-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 9px;
+}
+.advisor-load-summary > div {
+  display: grid;
+  gap: 4px;
+  padding: 11px 12px;
+  border: 1px solid #d5e1e8;
+  border-radius: 10px;
+  background: #f3f8fb;
+}
+.advisor-load-summary span {
+  color: #526b7d;
+  font-size: 11px;
+  font-weight: 700;
+}
+.advisor-load-summary strong {
+  color: #1d4e70;
+  font-size: 17px;
+}
+.advisor-estimate-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 9px;
+}
+.advisor-difficulty-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 7px;
+  padding: 5px 8px;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: capitalize;
+}
+.advisor-difficulty-pill.ligera {
+  color: #24613b;
+  background: #e2f2e5;
+}
+.advisor-difficulty-pill.moderada {
+  color: #76550b;
+  background: #fbf0cd;
+}
+.advisor-difficulty-pill.exigente {
+  color: #8a3c32;
+  background: #f8e4df;
+}
+.advisor-difficulty-control {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #526879;
+  font-size: 10px;
+  font-weight: 700;
+}
+.advisor-difficulty-control select {
+  max-width: 155px;
+  min-height: 34px;
+  padding: 6px 8px;
+  border: 1px solid #bdcdd6;
+  border-radius: 7px;
+  background: #fff;
+  color: #29475c;
+  font-size: 11px;
+}
+.advisor-reasons {
+  display: grid;
+  gap: 3px;
+  margin: 8px 0 0;
+  padding-left: 16px;
+  color: #536b7a;
+  font-size: 10px;
+  line-height: 1.45;
+}
+@media (max-width: 620px) {
+  .advisor-load-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .advisor-estimate-row { align-items: flex-start; flex-direction: column; }
+  .advisor-difficulty-control { width: 100%; justify-content: space-between; }
+  .advisor-difficulty-control select { max-width: none; }
+}
