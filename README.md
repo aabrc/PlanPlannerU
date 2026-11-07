@@ -61,7 +61,19 @@ El cliente base está preparado en `src/lib/supabase.ts`. Para configurarlo loca
 
 No agregues claves `service_role`, `sb_secret` ni otros secretos al frontend, a archivos versionados o a GitHub.
 
-El proyecto Supabase ya contiene `public.user_planner_data`, con RLS y políticas que limitan las operaciones al usuario autenticado propietario del registro. La aplicación React aún no implementa inicio de sesión, lectura, guardado ni sincronización con esa tabla. El historial de migraciones del proyecto está vacío; antes de cambiar el esquema hay que registrar y verificar su estado actual sin recrear ni eliminar la tabla existente.
+El proyecto Supabase ya contiene `public.user_planner_data`. La auditoría de noviembre de 2026 confirmó el siguiente estado:
+
+- `user_id uuid`: clave primaria y referencia a `auth.users(id)` con eliminación en cascada.
+- `state jsonb NOT NULL`, `device_id text NOT NULL` y `updated_at timestamptz NOT NULL DEFAULT now()`.
+- RLS habilitado. Las políticas de lectura, inserción y actualización se limitan a `authenticated` y comparan el propietario con `auth.uid()`.
+- El rol `authenticated` tiene `SELECT`, `INSERT` y `UPDATE`; no tiene acceso anónimo ni política de eliminación.
+- La tabla no tenía filas en la auditoría. El asesor de seguridad no reportó hallazgos.
+
+El asesor de rendimiento sí detectó que `auth.uid()` se evalúa por fila en las tres políticas. La corrección recomendada es envolver la llamada como `(select auth.uid())`. Esta optimización está pendiente de una migración versionada; todavía no se ha modificado la base de datos.
+
+**Importante:** el historial de migraciones del proyecto está vacío, aunque la tabla ya existe. No ejecutes un reinicio ni una migración que intente recrearla. Primero se debe registrar su estado actual y, antes de activar la sincronización, incorporar control de concurrencia para impedir que un dispositivo sobrescriba silenciosamente cambios recientes de otro.
+
+La aplicación React todavía no implementa inicio de sesión, lectura, guardado ni sincronización con esa tabla.
 
 ## Pendiente antes de producción
 
