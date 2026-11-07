@@ -298,10 +298,10 @@ function App() {
       .map((id) => GROUP_BY_ID.get(id))
       .filter((group): group is ElectiveGroup => Boolean(group))
       .map((group) => {
-        const groupNameMatches =
-          queryTerms.length === 0 || matchesAllSearchTerms(group.name + " " + group.id);
         const options = group.options.filter((course) => {
-          const textMatches = groupNameMatches || courseMatchesSearch(course);
+          const searchableContext = group.name + " " + group.id + " " + courseSearchText(course);
+          const textMatches =
+            queryTerms.length === 0 || matchesAllSearchTerms(searchableContext);
           return textMatches && courseMatchesStatus(course);
         });
         return { group, options };
