@@ -24,6 +24,8 @@ export interface AdvisorRecommendation {
   course: Course;
   unlocks: number;
   directUnlocks: number;
+  blockers: string[];
+  canEnroll: boolean;
   periodLabel: string;
   difficulty: CourseDifficultyEstimate;
   indexImpact: IndexImpactLevel;
@@ -272,19 +274,19 @@ export function buildAcademicAdvice(
       ? "Ritmo equilibrado"
       : "Ritmo intensivo";
 
-  const ranked = candidates
+  const evaluated = candidates
     .filter((course) =>
       state.courseStates[course.code] !== "approved" &&
-      state.courseStates[course.code] !== "inprogress" &&
-      blockersFor(course, state, allCourses, approved, plan.totalCredits).length === 0
+      state.courseStates[course.code] !== "inprogress"
     )
-    .map((course): AdvisorRecommendation => {
+    .map((course) => {
       const coursePeriodIndex = plan.periods.findIndex((period) =>
         period.courses.some((item) => item.code === course.code)
       );
       const isLagged = currentPeriodIndex >= 0 &&
         coursePeriodIndex >= 0 &&
         coursePeriodIndex < currentPeriodIndex;
+      const blockers = blockersFor(course, state, allCourses, approved, plan.totalCredits);
       const directUnlocks = (dependents.get(course.code) || new Set<string>()).size;
       const unlocks = countDownstream(course.code, dependents);
       const profile = state.advisorCourseProfiles?.[course.code] || {};
@@ -349,11 +351,13 @@ export function buildAcademicAdvice(
         reasons.push("Factores que identificaste: " + factorLabels.join(", "));
       }
 
-      return {
+      const recommendation: AdvisorRecommendation = {
         course,
         profile,
         unlocks,
         directUnlocks,
+        blockers,
+        canEnroll: blockers.length === 0,
         periodLabel: periodLabelForCourse(plan, course.code),
         difficulty,
         indexImpact: indexImpact(course.credits),
@@ -361,29 +365,40 @@ export function buildAcademicAdvice(
         reasons,
         priorityScore
       };
-    })
+
+      return { recommendation, isLagged };
+    });
+
+  // Only courses that can be taken now may enter the main recommendations.
+  const ranked = evaluated
+    .filter(({ recommendation }) => recommendation.canEnroll)
+    .map(({ recommendation }) => recommendation)
     .sort((a, b) =>
       b.priorityScore - a.priorityScore ||
       a.difficulty.score - b.difficulty.score ||
       a.course.code.localeCompare(b.course.code)
     );
 
-  // The main recommendation list owns the highest-ranked courses, including
-  // any lagged courses that deserve immediate attention. Never repeat those below.
   const recommendations = ranked.slice(0, 5);
   const recommendedCodes = new Set(recommendations.map((item) => item.course.code));
 
-  const laggedCourses = ranked
-    .filter((item) => {
-      const courseIndex = plan.periods.findIndex((period) =>
-        period.courses.some((course) => course.code === item.course.code)
-      );
-      return currentPeriodIndex >= 0 &&
-        courseIndex >= 0 &&
-        courseIndex < currentPeriodIndex &&
-        !recommendedCodes.has(item.course.code);
-    })
-    .slice(0, 5);
+  // Lagging is determined by the academic period, not by prerequisite availability.
+  // Currently actionable subjects that unlock other courses appear first; blocked
+  // subjects remain visible after them with the requirements that still need work.
+  const laggedCourses = evaluated
+    .filter(({ isLagged, recommendation }) =>
+      isLagged && !recommendedCodes.has(recommendation.course.code)
+    )
+    .sort((a, b) =>
+      Number(b.recommendation.canEnroll) - Number(a.recommendation.canEnroll) ||
+      b.recommendation.directUnlocks - a.recommendation.directUnlocks ||
+      b.recommendation.unlocks - a.recommendation.unlocks ||
+      b.recommendation.priorityScore - a.recommendation.priorityScore ||
+      a.recommendation.difficulty.score - b.recommendation.difficulty.score ||
+      a.recommendation.course.code.localeCompare(b.recommendation.course.code)
+    )
+    .slice(0, 5)
+    .map(({ recommendation }) => recommendation);
 
   return {
     recommendations,
