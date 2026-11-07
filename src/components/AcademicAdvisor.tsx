@@ -57,14 +57,18 @@ function RecommendationRow({
         <span className="advisor-course-summary-copy">
           <strong>{course.code}</strong>
           <span>{course.name}</span>
-          <small>{item.periodLabel} · {course.credits} créditos</small>
+          <small>
+            {item.periodLabel} · {course.credits} créditos · {item.canEnroll ? "Disponible para cursar" : "Pendiente por desbloquear"}
+          </small>
         </span>
         <span className="advisor-course-summary-meta">
-          {item.directUnlocks > 0
-            ? item.directUnlocks + (item.directUnlocks === 1 ? " desbloqueo directo" : " desbloqueos directos")
-            : item.unlocks > 0
-              ? item.unlocks + " relacionadas"
-              : "Disponible"}
+          {!item.canEnroll
+            ? "Pendiente por desbloquear"
+            : item.directUnlocks > 0
+              ? item.directUnlocks + (item.directUnlocks === 1 ? " desbloqueo directo" : " desbloqueos directos")
+              : item.unlocks > 0
+                ? item.unlocks + " relacionadas"
+                : "Disponible"}
         </span>
         <span className="advisor-expand-mark" aria-hidden="true">⌄</span>
       </summary>
@@ -72,7 +76,11 @@ function RecommendationRow({
       <div className="advisor-course-detail">
         <div className="advisor-course-detail-facts">
           <span>{course.credits} créditos</span>
+          <span>{item.canEnroll ? "Disponible para cursar" : "Pendiente por desbloquear"}</span>
           <span>Impacto potencial en índice: {item.indexImpact}</span>
+          {item.blockers.length > 0 && (
+            <span>Requisitos pendientes: {item.blockers.join(", ")}</span>
+          )}
           {item.unlocks > 0 && <span>Abre camino a {item.unlocks} materias relacionadas</span>}
         </div>
 
@@ -227,14 +235,14 @@ function AcademicAdvisor({
 
         <section className="advisor-column" aria-labelledby="advisor-lagged-title">
           <div className="advisor-column-heading">
-            <h3 id="advisor-lagged-title">Materias rezagadas disponibles</h3>
+            <h3 id="advisor-lagged-title">Materias rezagadas</h3>
             <span>{laggedCourses.length} identificadas</span>
           </div>
           {!hasCurrentPeriod ? (
             <div className="advisor-empty advisor-empty-action">
               <p>
-                Para detectar materias de períodos anteriores que puedes cursar,
-                primero indica cuál es tu período actual.
+                Para detectar materias pendientes de períodos anteriores, estén habilitadas
+                o todavía tengan requisitos por desbloquear, indica cuál es tu período actual.
               </p>
               <button type="button" className="secondary-button" onClick={onConfigurePeriod}>
                 Configurar período actual
@@ -255,8 +263,8 @@ function AcademicAdvisor({
             </div>
           ) : (
             <p className="advisor-empty">
-              No quedan materias rezagadas disponibles fuera de las prioridades
-              principales, o no hay asignaturas anteriores que cumplan los requisitos.
+              No hay materias pendientes de períodos anteriores fuera de las cinco
+              prioridades principales. Las asignaturas bloqueadas también se consideran rezagadas.
             </p>
           )}
         </section>
