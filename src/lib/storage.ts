@@ -1,4 +1,4 @@
-import type { CourseStatus, PlannerState } from "../types";
+import type { CourseDifficultyOverride, CourseStatus, PlannerState } from "../types";
 
 export const STORAGE_KEY = "itt2020_pensum_tracker_v2";
 
@@ -52,6 +52,7 @@ function blankState(externalCodes: string[]): PlannerState {
     scheduleEvents: [],
     scheduleView: { start: 360, end: 1200, lastVisibleDay: 6 },
     gradeAttempts: [],
+    courseDifficultyOverrides: {},
     meta: { currentPeriod: "", loadPerTerm: "15", gpa: "", internship: 0 }
   };
 }
@@ -62,6 +63,13 @@ export function normalizePlannerState(
 ): PlannerState {
   const base = blankState(externalCodes);
   const externalDone = { ...base.externalDone, ...(saved?.externalDone || {}) };
+
+  const validDifficultyOverrides: CourseDifficultyOverride[] = ["light", "moderate", "demanding"];
+  const courseDifficultyOverrides = Object.fromEntries(
+    Object.entries(saved?.courseDifficultyOverrides || {}).filter(
+      ([, value]) => validDifficultyOverrides.includes(value as CourseDifficultyOverride)
+    )
+  ) as Record<string, CourseDifficultyOverride>;
 
   // These two requirements are recorded as fulfilled through the admission exam.
   for (const code of AUTO_COMPLETED_EXTERNAL) externalDone[code] = true;
@@ -75,6 +83,7 @@ export function normalizePlannerState(
     scheduleEvents: Array.isArray(saved?.scheduleEvents) ? saved.scheduleEvents : [],
     scheduleView: normalizeScheduleView(saved?.scheduleView),
     gradeAttempts: Array.isArray(saved?.gradeAttempts) ? saved.gradeAttempts : [],
+    courseDifficultyOverrides,
     meta: { ...base.meta, ...(saved?.meta || {}) }
   };
 }
