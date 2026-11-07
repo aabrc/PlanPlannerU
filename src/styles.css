@@ -49,6 +49,15 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .progress-fill { height: 100%; background: linear-gradient(90deg,#7799ae,#6d9b7b); border-radius: 30px; transition: width .25s ease; }
 .progress-caption { display: flex; justify-content: space-between; color: #92958d; font-size: 10px; }
 .two-column, .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+.home-dashboard-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 15px; }
+.home-schedule-count { color: #527a58; font: 700 14px Georgia,serif; margin: 12px 0 5px; }
+.home-schedule-pending { margin: 7px 0; color: #9a713d !important; }
+.home-schedule-list { display: grid; gap: 8px; margin: 10px 0 13px; }
+.home-schedule-item { min-width: 0; padding: 10px 11px; border: 1px solid #e6dece; border-radius: 10px; background: #faf7ee; }
+.home-schedule-item strong, .home-schedule-item small { display: block; }
+.home-schedule-item strong { color: #53738a; font-size: 11px; line-height: 1.45; }
+.home-schedule-item small { color: #89918e; font-size: 10px; margin-top: 4px; }
+.home-schedule-empty { padding: 10px; border-radius: 9px; background: #f9f6ee; }
 .paper-card h2 { margin-top: 7px; }
 .paper-card p { color: #75818a; font-size: 12px; line-height: 1.6; }
 .secondary-button { background: #fffdf7; border-color: #dcd5c8; color: #587083; }
@@ -101,6 +110,8 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .elective-section { border-top: 1px dashed #ded5c4; margin-top: 16px; padding-top: 14px; }
 .elective-section h3 { font: 700 15px Georgia,serif; color: #43566a; margin: 0 0 10px; }
 .elective-card { margin-bottom: 8px; background: #fbf8f0; }
+.elective-card.lagged { background: #fff8e7; border-color: #ead9a9; }
+.elective-card > small.blocker-text { color: #9d7748; font-weight: 700; }
 .elective-heading h4 { font-size: 12px; margin: 0 0 8px; color: #43566a; }
 .field-label, .form-field { display: block; color: #74828a; font-size: 11px; font-weight: 700; margin: 9px 0; }
 .elective-card select, .form-field input, .form-field select { width: 100%; background: #fffefa; color: #43566a; border: 1px solid #dcd5c8; border-radius: 9px; padding: 9px; font-size: 12px; margin-top: 5px; }
@@ -133,6 +144,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
   .topbar { position: static; }
   .hero-sheet { grid-template-columns: 1fr 170px; padding: 24px; }
   .stats-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .home-dashboard-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
 }
 @media (max-width: 620px) {
   .app-frame { padding: 0 12px 24px; }
@@ -143,6 +155,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
   .hero-sheet { grid-template-columns: 1fr; padding: 21px; }
   .hero-note { max-width: 190px; }
   .stats-grid, .two-column, .meta-grid { grid-template-columns: 1fr 1fr; gap: 9px; }
+  .home-dashboard-grid { grid-template-columns: 1fr; gap: 9px; }
   .stat-card { padding: 13px; }
   .stat-card strong { font-size: 21px; }
   .course-grid { grid-template-columns: 1fr; }
