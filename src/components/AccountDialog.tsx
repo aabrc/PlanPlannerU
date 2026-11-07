@@ -1,12 +1,21 @@
 import { useEffect, useState } from "react";
 import type { Session, SupabaseClient } from "@supabase/supabase-js";
 import { buildAuthRedirectUrl, isValidEmailAddress } from "../lib/auth";
+import type { PlannerSyncResult } from "../lib/cloudSync";
+
+type SyncConflict = Extract<PlannerSyncResult, { status: "conflict" }>;
 
 interface AccountDialogProps {
   open: boolean;
   configured: boolean;
   session: Session | null;
   supabaseClient: SupabaseClient | null;
+  syncBusy: boolean;
+  syncMessage: string;
+  syncConflict: SyncConflict | null;
+  onSyncNow: () => void;
+  onUseCloud: () => void;
+  onKeepLocal: () => void;
   onClose: () => void;
 }
 
@@ -30,6 +39,12 @@ export default function AccountDialog({
   configured,
   session,
   supabaseClient,
+  syncBusy,
+  syncMessage,
+  syncConflict,
+  onSyncNow,
+  onUseCloud,
+  onKeepLocal,
   onClose
 }: AccountDialogProps) {
   const [email, setEmail] = useState("");
@@ -148,8 +163,40 @@ export default function AccountDialog({
                 Sesión iniciada
               </div>
               <strong className="account-email">{session.user.email || "Cuenta autenticada"}</strong>
-              <p>Tu cuenta está identificada en este dispositivo. Tu pensum, horario y calificaciones siguen guardándose localmente; la sincronización con la nube se incorporará en la siguiente etapa.</p>
-              <button className="secondary-button account-action" type="button" onClick={signOut} disabled={signingOut}>
+              <p>Tu cuenta está identificada. Tu progreso sigue guardándose primero en este dispositivo; la sincronización se inicia manualmente desde aquí.</p>
+              <section className="account-sync-panel" aria-label="Sincronización académica">
+                <div className="account-sync-heading">
+                  <strong>Respaldo en la nube</strong>
+                  <span className="account-sync-state">{syncBusy ? "Comprobando…" : "Manual"}</span>
+                </div>
+                <p>Compara tu pensum local con la última revisión de tu cuenta. Si ambos tienen cambios, podrás elegir cuál conservar.</p>
+                <button className="primary-button account-action" type="button" onClick={onSyncNow} disabled={syncBusy}>
+                  {syncBusy ? "Sincronizando…" : "Sincronizar ahora"}
+                </button>
+                {syncMessage && <p className="account-sync-message" role="status">{syncMessage}</p>}
+                {syncConflict && (
+                  <div className="account-conflict">
+                    <strong>Se detectaron dos versiones diferentes</strong>
+                    <p>
+                      La nube tiene la revisión {syncConflict.remoteRevision}
+                      {syncConflict.remoteUpdatedAt && !Number.isNaN(Date.parse(syncConflict.remoteUpdatedAt))
+                        ? " · actualizada " + new Date(syncConflict.remoteUpdatedAt).toLocaleString("es-DO")
+                        : ""}.
+                      No se ha sobrescrito ningún progreso.
+                    </p>
+                    <div className="account-conflict-actions">
+                      <button className="secondary-button" type="button" onClick={onUseCloud} disabled={syncBusy}>
+                        Usar versión de la nube
+                      </button>
+                      <button className="secondary-button" type="button" onClick={onKeepLocal} disabled={syncBusy}>
+                        Conservar este dispositivo
+                      </button>
+                    </div>
+                    <small>La opción local reemplaza la copia de la nube solo si su revisión no ha cambiado desde esta comprobación. La opción de nube genera primero un respaldo JSON de tu dispositivo.</small>
+                  </div>
+                )}
+              </section>
+              <button className="secondary-button account-action" type="button" onClick={signOut} disabled={signingOut || syncBusy}>
                 {signingOut ? "Cerrando sesión…" : "Cerrar sesión en este dispositivo"}
               </button>
             </>
@@ -194,7 +241,7 @@ export default function AccountDialog({
           )}
 
           {message && <p className={sent ? "account-message success" : "account-message"} role="status">{message}</p>}
-          <p className="account-data-note">Iniciar sesión no copia, reemplaza ni elimina tu progreso local. No se enviará ningún dato académico a la nube hasta activar la sincronización con sus controles de seguridad.</p>
+          <p className="account-data-note">La sincronización solo ocurre cuando pulsas «Sincronizar ahora». En caso de conflicto, no se sobrescribe ningún progreso sin que elijas una versión.</p>
         </div>
       </section>
     </div>
