@@ -92,9 +92,16 @@ export function decideSyncAction(local: PlannerState, remote: PlannerState): Syn
     return "conflict";
   }
 
-  if (!localHasData && remoteHasData) return "download";
-  if (localHasData && !remoteHasData) return "upload";
   if (!localHasData && !remoteHasData) return "synced";
+
+  // A new device with no saved revision may safely take the existing cloud copy.
+  if (!localHasData && remoteHasData && local._syncRevision === undefined) {
+    return "download";
+  }
+
+  // An existing cloud row with only one populated side is ambiguous. Require
+  // an explicit choice instead of silently replacing an empty or populated copy.
+  if (!localHasData || !remoteHasData) return "conflict";
 
   // Two populated states on a first login have no common baseline.
   if (local._syncRevision === undefined) return "conflict";
