@@ -147,8 +147,12 @@ async function readRemote(
     throw new Error("La revisión guardada en la nube no es válida. No se modificó ningún dato.");
   }
 
+  if (!isRecord(data.state)) {
+    throw new Error("El progreso guardado en la nube no tiene un formato válido. No se modificó ningún dato.");
+  }
+
   const state = normalizePlannerState(
-    isRecord(data.state) ? data.state as Partial<PlannerState> : {},
+    data.state as Partial<PlannerState>,
     externalCodes
   );
   state._syncRevision = revision;
