@@ -130,10 +130,22 @@ export default function ScheduleCalendar({
   const visibleDays = DAYS.slice(0, scheduleView.lastVisibleDay + 1);
   const viewHeight = ((viewEnd - viewStart) / 60) * HOUR_HEIGHT;
   const printViewHeight = ((viewEnd - viewStart) / 60) * PRINT_HOUR_HEIGHT;
-  const timeTicks: number[] = [viewStart];
+  // Build actual hour boundaries from the selected start through the selected end.
+  // Partial first/last hours remain proportional, so labels and grid lines stay aligned.
+  const timeBoundaries: number[] = [viewStart];
   for (let minute = (Math.floor(viewStart / 60) + 1) * 60; minute < viewEnd; minute += 60) {
-    timeTicks.push(minute);
+    timeBoundaries.push(minute);
   }
+  if (timeBoundaries[timeBoundaries.length - 1] !== viewEnd) timeBoundaries.push(viewEnd);
+  const timeSlots = timeBoundaries.slice(0, -1).map((minute, index) => {
+    const nextBoundary = timeBoundaries[index + 1];
+    const centerMinute = (minute + nextBoundary) / 2;
+    return {
+      minute,
+      screenCenter: ((centerMinute - viewStart) / 60) * HOUR_HEIGHT,
+      printCenter: ((centerMinute - viewStart) / 60) * PRINT_HOUR_HEIGHT
+    };
+  });
   const dayEntries = visibleDays.map((day, index) => ({
     day,
     dayIndex: index,
@@ -249,12 +261,12 @@ export default function ScheduleCalendar({
       </div>
       <div className="schedule-legend"><span><i className="schedule-legend-dot class-dot" />Clases</span><span><i className="schedule-legend-dot personal-dot" />Actividades personales</span></div>
       {unscheduled.length > 0 && <section className="unscheduled-panel"><h3>Materias en curso por organizar</h3><p>Ya están añadidas a tu horario. Solo falta indicar los días y las horas en que las cursas.</p><div className="unscheduled-list">{unscheduled.map((event) => <div className="unscheduled-row" key={event.id}><div><strong>{event.courseCode} · {event.title}</strong><small>En curso · falta asignar días y horas</small></div><button className="secondary-button" type="button" onClick={() => openEdit(event)}>Elegir días y horas</button></div>)}</div></section>}
-      <div className="calendar-shell"><div className="calendar-grid-react" style={{ minWidth: `${62 + visibleDays.length * 112}px`, gridTemplateColumns: `62px repeat(${visibleDays.length}, minmax(112px, 1fr))`, gridTemplateRows: `58px ${viewHeight}px` }}>
+      <div className="calendar-shell"><div className="calendar-grid-react" style={{ minWidth: `${84 + visibleDays.length * 112}px`, gridTemplateColumns: `84px repeat(${visibleDays.length}, minmax(112px, 1fr))`, gridTemplateRows: `58px ${viewHeight}px` }}>
         <div className="calendar-corner-react" />
         {dayEntries.map(({ day, segments }) => <div className="calendar-day-head" key={day.id}><strong>{day.name}</strong><small>{segments.length} bloques</small></div>)}
-        <div className="calendar-time-axis">{timeTicks.map((minute) => <span key={minute} style={{ top: (minute - viewStart) / 60 * HOUR_HEIGHT }}>{formatAxisMinutes(minute)}</span>)}</div>
+        <div className="calendar-time-axis">{timeSlots.map(({ minute, screenCenter }) => <span key={minute} style={{ top: screenCenter }}>{formatClock(minute)}</span>)}</div>
         {dayEntries.map(({ day, segments }) => <div className="calendar-day-lane" key={day.id} style={{ height: viewHeight }}>
-          {timeTicks.map((minute) => <i className="calendar-hour-line" key={minute} style={{ top: (minute - viewStart) / 60 * HOUR_HEIGHT }} />)}
+          {timeBoundaries.map((minute) => <i className="calendar-hour-line" key={minute} style={{ top: (minute - viewStart) / 60 * HOUR_HEIGHT }} />)}
           {segments.map((segment, segmentIndex) => {
             const color = segment.event.courseCode ? { bg: "#dceeff", border: "#86bce4", text: "#174f78" } : (COLORS.find((item) => item.id === segment.event.color) || COLORS[0]);
             const top = (segment.start - viewStart) / 60 * HOUR_HEIGHT;
@@ -276,11 +288,11 @@ export default function ScheduleCalendar({
           <div className="schedule-print-corner" />
           {dayEntries.map(({ day }) => <div className="schedule-print-day-heading" key={day.id}>{day.name}</div>)}
           <div className="schedule-print-time-axis" style={{ height: printViewHeight }}>
-            {timeTicks.map((minute) => <span key={minute} style={{ top: (minute - viewStart) / 60 * PRINT_HOUR_HEIGHT }}>{formatAxisMinutes(minute)}</span>)}
+            {timeSlots.map(({ minute, printCenter }) => <span key={minute} style={{ top: printCenter }}>{formatAxisMinutes(minute)}</span>)}
           </div>
           {dayEntries.map(({ day, segments }) => (
             <section className="schedule-print-day" key={day.id} style={{ height: printViewHeight }}>
-              {timeTicks.map((minute) => <i className="schedule-print-hour-line" key={minute} style={{ top: (minute - viewStart) / 60 * PRINT_HOUR_HEIGHT }} />)}
+              {timeBoundaries.map((minute) => <i className="schedule-print-hour-line" key={minute} style={{ top: (minute - viewStart) / 60 * PRINT_HOUR_HEIGHT }} />)}
               {segments.map((segment, segmentIndex) => {
                 const color = segment.event.courseCode ? { bg: "#dceeff", text: "#174f78" } : (COLORS.find((item) => item.id === segment.event.color) || COLORS[0]);
                 const top = (segment.start - viewStart) / 60 * PRINT_HOUR_HEIGHT;
