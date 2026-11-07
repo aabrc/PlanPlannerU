@@ -30,7 +30,8 @@ describe("cloud planner synchronization decisions", () => {
       { scheduleEvents: [{ id: "e1", title: "Estudio", days: ["mon"], start: "08:00", end: "09:00" }] },
       { gradeAttempts: [{ id: "g1", courseCode: "ICC103", periodId: "y1p2", grade: 90, createdAt: 1 }] },
       { advisorCourseProfiles: { ICC103: { difficultyOverride: "moderate" } } },
-      { meta: { ...blankState().meta, currentPeriod: "y1p2" } }
+      { meta: { ...blankState().meta, currentPeriod: "y1p2" } },
+      { meta: { ...blankState().meta, loadPerTerm: "22" } }
     ];
 
     for (const patch of cases) {
