@@ -71,7 +71,7 @@ El proyecto Supabase ya contiene `public.user_planner_data`. La auditoría de no
 
 El asesor de rendimiento sí detectó que `auth.uid()` se evalúa por fila en las tres políticas. La corrección recomendada es envolver la llamada como `(select auth.uid())`. Esta optimización está pendiente de una migración versionada; todavía no se ha modificado la base de datos.
 
-**Importante:** el historial de migraciones del proyecto está vacío, aunque la tabla ya existe. No ejecutes un reinicio ni una migración que intente recrearla. Primero se debe registrar su estado actual y, antes de activar la sincronización, incorporar control de concurrencia para impedir que un dispositivo sobrescriba silenciosamente cambios recientes de otro.
+**Importante:** la tabla y su esquema inicial son anteriores al historial de migraciones del repositorio. La migración registrada en noviembre de 2026 optimiza únicamente las políticas existentes; no crea ni recrea la tabla. No ejecutes un reinicio de la base de datos ni una migración que intente recrearla. Antes de activar la sincronización, incorpora control de concurrencia para impedir que un dispositivo sobrescriba silenciosamente cambios recientes de otro.
 
 La aplicación React todavía no implementa inicio de sesión, lectura, guardado ni sincronización con esa tabla.
 
