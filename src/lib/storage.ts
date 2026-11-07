@@ -12,14 +12,263 @@ export const STORAGE_KEY = "itt2020_pensum_tracker_v2";
 
 const AUTO_COMPLETED_EXTERNAL = ["MAT311", "ILE203"];
 
-function normalizeScheduleView(saved?: {
-  start?: number;
-  end?: number;
-  lastVisibleDay?: number;
-}): { start: number; end: number; lastVisibleDay: number } {
-  const savedStart = saved?.start;
-  const savedEnd = saved?.end;
-  const savedLastDay = saved?.lastVisibleDay;
+type UnknownRecord = Record<string, unknown>;
+
+const VALID_COURSE_STATUSES: CourseStatus[] = ["pending", "inprogress", "approved"];
+const VALID_DAYS = new Set(["mon", "tue", "wed", "thu", "fri", "sat", "sun"]);
+const VALID_EVENT_COLORS = new Set([
+  "blue", "sky", "cyan", "teal", "green", "lime", "yellow", "amber",
+  "orange", "coral", "red", "rose", "pink", "purple", "violet", "slate"
+]);
+const MAX_SCHEDULE_EVENTS = 500;
+const MAX_GRADE_ATTEMPTS = 1000;
+
+function isRecord(value: unknown): value is UnknownRecord {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function safeKey(value: string): boolean {
+  return value.length > 0 &&
+    value.length <= 160 &&
+    value !== "__proto__" &&
+    value !== "prototype" &&
+    value !== "constructor";
+}
+
+function optionalString(value: unknown, maxLength = 500): string | undefined {
+  if (typeof value !== "string") return undefined;
+  const trimmed = value.trim();
+  return trimmed ? trimmed.slice(0, maxLength) : undefined;
+}
+
+function finiteNumber(value: unknown): number | undefined {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string" && value.trim() !== "") {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return undefined;
+}
+
+function normalizeClock(value: unknown, allowEndOfDay = false): string | undefined {
+  if (typeof value !== "string" || value === "") return value === "" ? "" : undefined;
+  if (allowEndOfDay && value === "24:00") return value;
+  return /^([01]\\d|2[0-3]):[0-5]\\d$/.test(value) ? value : undefined;
+}
+
+function normalizeCourseStates(value: unknown): Record<string, CourseStatus> {
+  if (!isRecord(value)) return {};
+  const result: Record<string, CourseStatus> = {};
+
+  for (const [code, status] of Object.entries(value)) {
+    if (safeKey(code) && VALID_COURSE_STATUSES.includes(status as CourseStatus)) {
+      result[code] = status as CourseStatus;
+    }
+  }
+
+  return result;
+}
+
+function normalizeSelections(value: unknown): Record<string, string> {
+  if (!isRecord(value)) return {};
+  const result: Record<string, string> = {};
+
+  for (const [groupId, courseCode] of Object.entries(value)) {
+    const selectedCode = optionalString(courseCode, 80);
+    if (safeKey(groupId) && selectedCode) result[groupId] = selectedCode;
+  }
+
+  return result;
+}
+
+function normalizeExternalDone(value: unknown, externalCodes: string[]): Record<string, boolean> {
+  const saved = isRecord(value) ? value : {};
+  const result: Record<string, boolean> = {};
+
+  for (const code of externalCodes) {
+    result[code] = typeof saved[code] === "boolean"
+      ? saved[code] as boolean
+      : AUTO_COMPLETED_EXTERNAL.includes(code);
+  }
+
+  for (const code of AUTO_COMPLETED_EXTERNAL) {
+    if (externalCodes.includes(code)) result[code] = true;
+  }
+
+  return result;
+}
+
+function normalizeScheduleEvents(value: unknown): ScheduleEvent[] {
+  if (!Array.isArray(value)) return [];
+  const result: ScheduleEvent[] = [];
+  const usedIds = new Set<string>();
+
+  for (const [index, rawEvent] of value.slice(0, MAX_SCHEDULE_EVENTS).entries()) {
+    if (!isRecord(rawEvent)) continue;
+
+    const title = optionalString(rawEvent.title, 120);
+    const courseCode = optionalString(rawEvent.courseCode, 80);
+    if (!title) continue;
+
+    let id = optionalString(rawEvent.id, 120) || "event-" + (index + 1);
+    if (!safeKey(id)) id = "event-" + (index + 1);
+    if (usedIds.has(id)) {
+      let suffix = 2;
+      while (usedIds.has(id + "-" + suffix)) suffix += 1;
+      id = id + "-" + suffix;
+    }
+    usedIds.add(id);
+
+    const event: ScheduleEvent = {
+      id,
+      title,
+      ...(courseCode ? { courseCode } : {})
+    };
+
+    const kind = optionalString(rawEvent.kind, 40);
+    if (kind) event.kind = kind;
+
+    if (Array.isArray(rawEvent.days)) {
+      event.days = Array.from(new Set(
+        rawEvent.days.filter((day): day is string =>
+          typeof day === "string" && VALID_DAYS.has(day)
+        )
+      ));
+    }
+
+    const start = normalizeClock(rawEvent.start);
+    const end = normalizeClock(rawEvent.end, true);
+    if (start !== undefined) event.start = start;
+    if (end !== undefined) event.end = end;
+
+    const location = optionalString(rawEvent.location, 160);
+    const notes = optionalString(rawEvent.notes, 1000);
+    const color = optionalString(rawEvent.color, 30);
+    if (location) event.location = location;
+    if (notes) event.notes = notes;
+    if (color && VALID_EVENT_COLORS.has(color)) event.color = color;
+
+    result.push(event);
+  }
+
+  return result;
+}
+
+function normalizeGradeAttempts(value: unknown): GradeAttempt[] {
+  if (!Array.isArray(value)) return [];
+  const latestByCoursePeriod = new Map<string, GradeAttempt>();
+
+  for (const [index, rawAttempt] of value.slice(0, MAX_GRADE_ATTEMPTS).entries()) {
+    if (!isRecord(rawAttempt)) continue;
+    const courseCode = optionalString(rawAttempt.courseCode, 80);
+    const periodId = optionalString(rawAttempt.periodId, 80);
+    const grade = finiteNumber(rawAttempt.grade);
+    const createdAt = finiteNumber(rawAttempt.createdAt);
+
+    if (!courseCode || !periodId || grade === undefined || grade < 0 || grade > 100 ||
+      createdAt === undefined || createdAt < 0) {
+      continue;
+    }
+
+    const key = courseCode + "::" + periodId;
+    const id = optionalString(rawAttempt.id, 160) || "attempt-" + (index + 1);
+    const candidate: GradeAttempt = { id, courseCode, periodId, grade, createdAt };
+    const previous = latestByCoursePeriod.get(key);
+
+    if (!previous || candidate.createdAt >= previous.createdAt) {
+      latestByCoursePeriod.set(key, candidate);
+    }
+  }
+
+  return Array.from(latestByCoursePeriod.values());
+}
+
+function normalizeMeta(value: unknown, fallback: PlannerState["meta"]): PlannerState["meta"] {
+  const saved = isRecord(value) ? value : {};
+  const load = finiteNumber(saved.loadPerTerm);
+  const gpa = finiteNumber(saved.gpa);
+  const internship = finiteNumber(saved.internship);
+  const normalizedLoad = load === undefined
+    ? 15
+    : Math.max(1, Math.min(30, Math.floor(load)));
+
+  return {
+    ...fallback,
+    ...saved,
+    currentPeriod: optionalString(saved.currentPeriod, 80) || "",
+    loadPerTerm: String(normalizedLoad),
+    gpa: saved.gpa === "" || saved.gpa === null || saved.gpa === undefined || gpa === undefined
+      ? ""
+      : String(Math.max(0, Math.min(4, gpa))),
+    internship: internship === undefined
+      ? 0
+      : Math.floor(Math.max(0, Math.min(320, internship)))
+  };
+}
+
+function normalizeAdvisorProfiles(saved: UnknownRecord): Record<string, AdvisorCourseProfile> {
+  const validDifficultyOverrides: CourseDifficultyOverride[] = ["light", "moderate", "demanding"];
+  const validReadiness: AdvisorReadiness[] = ["prepared", "some-gaps", "needs-review"];
+  const validExperiences: AdvisorCourseExperience[] = [
+    "not-started",
+    "manageable",
+    "as-expected",
+    "challenging"
+  ];
+  const validChallengeFactors: AdvisorChallengeFactor[] = [
+    "foundations",
+    "teaching-method",
+    "assessments",
+    "practical-skills",
+    "time-constraints"
+  ];
+  const advisorCourseProfiles: Record<string, AdvisorCourseProfile> = {};
+  const savedProfiles = isRecord(saved.advisorCourseProfiles) ? saved.advisorCourseProfiles : {};
+
+  for (const [code, rawProfile] of Object.entries(savedProfiles)) {
+    if (!safeKey(code) || !isRecord(rawProfile)) continue;
+    const profile = rawProfile;
+    const normalized: AdvisorCourseProfile = {};
+
+    if (validDifficultyOverrides.includes(profile.difficultyOverride as CourseDifficultyOverride)) {
+      normalized.difficultyOverride = profile.difficultyOverride as CourseDifficultyOverride;
+    }
+    if (validReadiness.includes(profile.readiness as AdvisorReadiness)) {
+      normalized.readiness = profile.readiness as AdvisorReadiness;
+    }
+    if (validExperiences.includes(profile.experience as AdvisorCourseExperience)) {
+      normalized.experience = profile.experience as AdvisorCourseExperience;
+    }
+    if (Array.isArray(profile.challengeFactors)) {
+      normalized.challengeFactors = Array.from(new Set(
+        profile.challengeFactors.filter((factor): factor is AdvisorChallengeFactor =>
+          validChallengeFactors.includes(factor as AdvisorChallengeFactor)
+        )
+      ));
+      if (normalized.challengeFactors.length === 0) delete normalized.challengeFactors;
+    }
+
+    if (Object.keys(normalized).length > 0) advisorCourseProfiles[code] = normalized;
+  }
+
+  // Migrate previously saved personal difficulty adjustments without losing them.
+  const oldOverrides = isRecord(saved.courseDifficultyOverrides) ? saved.courseDifficultyOverrides : {};
+  for (const [code, value] of Object.entries(oldOverrides)) {
+    if (!safeKey(code) || !validDifficultyOverrides.includes(value as CourseDifficultyOverride)) continue;
+    const current = advisorCourseProfiles[code] || {};
+    if (!current.difficultyOverride) {
+      advisorCourseProfiles[code] = { ...current, difficultyOverride: value as CourseDifficultyOverride };
+    }
+  }
+
+  return advisorCourseProfiles;
+}
+
+function normalizeScheduleView(saved: unknown): { start: number; end: number; lastVisibleDay: number } {
+  const record = isRecord(saved) ? saved : {};
+  const savedStart = record.start;
+  const savedEnd = record.end;
+  const savedLastDay = record.lastVisibleDay;
 
   const start =
     typeof savedStart === "number" &&
@@ -48,7 +297,6 @@ function normalizeScheduleView(saved?: {
   if (end <= start) return { start: 360, end: 1200, lastVisibleDay };
   return { start, end, lastVisibleDay };
 }
-
 function blankState(externalCodes: string[]): PlannerState {
   const externalDone = Object.fromEntries(
     externalCodes.map((code) => [code, AUTO_COMPLETED_EXTERNAL.includes(code)])
@@ -69,76 +317,21 @@ export function normalizePlannerState(
   saved: Partial<PlannerState> | null | undefined,
   externalCodes: string[]
 ): PlannerState {
+  const record = isRecord(saved) ? saved : {};
   const base = blankState(externalCodes);
-  const externalDone = { ...base.externalDone, ...(saved?.externalDone || {}) };
-
-  const validDifficultyOverrides: CourseDifficultyOverride[] = ["light", "moderate", "demanding"];
-  const validReadiness: AdvisorReadiness[] = ["prepared", "some-gaps", "needs-review"];
-  const validExperiences: AdvisorCourseExperience[] = [
-    "not-started",
-    "manageable",
-    "as-expected",
-    "challenging"
-  ];
-  const validChallengeFactors: AdvisorChallengeFactor[] = [
-    "foundations",
-    "teaching-method",
-    "assessments",
-    "practical-skills",
-    "time-constraints"
-  ];
-  const advisorCourseProfiles: Record<string, AdvisorCourseProfile> = {};
-
-  for (const [code, rawProfile] of Object.entries(saved?.advisorCourseProfiles || {})) {
-    if (!rawProfile || typeof rawProfile !== "object") continue;
-    const profile = rawProfile as AdvisorCourseProfile;
-    const normalized: AdvisorCourseProfile = {};
-
-    if (validDifficultyOverrides.includes(profile.difficultyOverride as CourseDifficultyOverride)) {
-      normalized.difficultyOverride = profile.difficultyOverride;
-    }
-    if (validReadiness.includes(profile.readiness as AdvisorReadiness)) {
-      normalized.readiness = profile.readiness;
-    }
-    if (validExperiences.includes(profile.experience as AdvisorCourseExperience)) {
-      normalized.experience = profile.experience;
-    }
-    if (Array.isArray(profile.challengeFactors)) {
-      normalized.challengeFactors = Array.from(new Set(
-        profile.challengeFactors.filter((factor): factor is AdvisorChallengeFactor =>
-          validChallengeFactors.includes(factor)
-        )
-      ));
-      if (normalized.challengeFactors.length === 0) delete normalized.challengeFactors;
-    }
-
-    if (Object.keys(normalized).length > 0) advisorCourseProfiles[code] = normalized;
-  }
-
-  // Migrate previously saved personal difficulty adjustments without losing them.
-  for (const [code, value] of Object.entries(saved?.courseDifficultyOverrides || {})) {
-    if (!validDifficultyOverrides.includes(value as CourseDifficultyOverride)) continue;
-    const current = advisorCourseProfiles[code] || {};
-    if (!current.difficultyOverride) {
-      advisorCourseProfiles[code] = { ...current, difficultyOverride: value as CourseDifficultyOverride };
-    }
-  }
-
-  // These two requirements are recorded as fulfilled through the admission exam.
-  for (const code of AUTO_COMPLETED_EXTERNAL) externalDone[code] = true;
+  const syncUpdatedAt = finiteNumber(record._syncUpdatedAt);
 
   return {
     ...base,
-    ...(saved || {}),
-    courseStates: { ...(saved?.courseStates || {}) },
-    selections: { ...(saved?.selections || {}) },
-    externalDone,
-    scheduleEvents: Array.isArray(saved?.scheduleEvents) ? saved.scheduleEvents : [],
-    scheduleView: normalizeScheduleView(saved?.scheduleView),
-    gradeAttempts: Array.isArray(saved?.gradeAttempts) ? saved.gradeAttempts : [],
-    advisorCourseProfiles,
-    courseDifficultyOverrides: undefined,
-    meta: { ...base.meta, ...(saved?.meta || {}) }
+    courseStates: normalizeCourseStates(record.courseStates),
+    selections: normalizeSelections(record.selections),
+    externalDone: normalizeExternalDone(record.externalDone, externalCodes),
+    scheduleEvents: normalizeScheduleEvents(record.scheduleEvents),
+    scheduleView: normalizeScheduleView(record.scheduleView),
+    gradeAttempts: normalizeGradeAttempts(record.gradeAttempts),
+    advisorCourseProfiles: normalizeAdvisorProfiles(record),
+    meta: normalizeMeta(record.meta, base.meta),
+    ...(syncUpdatedAt !== undefined && syncUpdatedAt >= 0 ? { _syncUpdatedAt: syncUpdatedAt } : {})
   };
 }
 
