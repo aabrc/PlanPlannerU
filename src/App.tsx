@@ -80,16 +80,7 @@ function normalizeSearchText(value: string): string {
 }
 
 function courseSearchText(course: Course): string {
-  const requirementCodes = [...(course.req || []), ...(course.additional || [])];
-  const requirementNames = requirementCodes.map((code) => COURSE_BY_CODE.get(code)?.name || "");
-  return [
-    course.code,
-    course.name,
-    course.id || "",
-    course.credits + " créditos",
-    requirementCodes.join(" "),
-    requirementNames.join(" ")
-  ].join(" ");
+  return [course.code, course.name, course.id || ""].join(" ");
 }
 
 function approvedCredits(state: PlannerState): number {
@@ -298,12 +289,9 @@ function App() {
       .map((id) => GROUP_BY_ID.get(id))
       .filter((group): group is ElectiveGroup => Boolean(group))
       .map((group) => {
-        const options = group.options.filter((course) => {
-          const searchableContext = group.name + " " + group.id + " " + courseSearchText(course);
-          const textMatches =
-            queryTerms.length === 0 || matchesAllSearchTerms(searchableContext);
-          return textMatches && courseMatchesStatus(course);
-        });
+        const options = group.options.filter((course) =>
+          courseMatchesSearch(course) && courseMatchesStatus(course)
+        );
         return { group, options };
       })
       .filter((entry) => entry.options.length > 0);
