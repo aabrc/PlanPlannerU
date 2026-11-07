@@ -322,6 +322,7 @@ export function normalizePlannerState(
   const record = isRecord(saved) ? saved : {};
   const base = blankState(externalCodes);
   const syncUpdatedAt = finiteNumber(record._syncUpdatedAt);
+  const syncRevision = finiteNumber(record._syncRevision);
 
   return {
     ...base,
@@ -333,7 +334,10 @@ export function normalizePlannerState(
     gradeAttempts: normalizeGradeAttempts(record.gradeAttempts),
     advisorCourseProfiles: normalizeAdvisorProfiles(record),
     meta: normalizeMeta(record.meta, base.meta),
-    ...(syncUpdatedAt !== undefined && syncUpdatedAt >= 0 ? { _syncUpdatedAt: syncUpdatedAt } : {})
+    ...(syncUpdatedAt !== undefined && syncUpdatedAt >= 0 ? { _syncUpdatedAt: syncUpdatedAt } : {}),
+    ...(syncRevision !== undefined && Number.isSafeInteger(syncRevision) && syncRevision >= 1
+      ? { _syncRevision: syncRevision }
+      : {})
   };
 }
 
