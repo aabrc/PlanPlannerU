@@ -31,7 +31,9 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function cloudState(state: PlannerState): Record<string, unknown> {
-  const { _syncUpdatedAt: _localUpdatedAt, _syncRevision: _localRevision, ...persisted } = state;
+  const persisted: Record<string, unknown> = { ...state };
+  delete persisted._syncUpdatedAt;
+  delete persisted._syncRevision;
   return persisted;
 }
 
