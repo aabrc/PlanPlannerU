@@ -83,11 +83,25 @@ describe("cloud planner synchronization decisions", () => {
     expect(decideSyncAction(local, remote)).toBe("download");
   });
 
-  it("uploads local progress when the cloud row is empty", () => {
+  it("asks before replacing an existing empty cloud row with first-login local progress", () => {
     const local = { ...blankState(), courseStates: { ICC103: "approved" as const } };
     const remote = { ...blankState(), _syncRevision: 1 };
 
-    expect(decideSyncAction(local, remote)).toBe("upload");
+    expect(decideSyncAction(local, remote)).toBe("conflict");
+  });
+
+  it("asks before replacing populated cloud progress with an empty previously-synced local state", () => {
+    const local = { ...blankState(), _syncRevision: 4 };
+    const remote = { ...blankState(), courseStates: { ICC103: "approved" as const }, _syncRevision: 4 };
+
+    expect(decideSyncAction(local, remote)).toBe("conflict");
+  });
+
+  it("marks two empty snapshots as synchronized", () => {
+    const local = { ...blankState(), _syncRevision: 3 };
+    const remote = { ...blankState(), _syncRevision: 3 };
+
+    expect(decideSyncAction(local, remote)).toBe("synced");
   });
 
   it("does not overwrite two populated states on first login without explicit choice", () => {
