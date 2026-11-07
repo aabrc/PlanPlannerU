@@ -4,6 +4,7 @@ import AcademicIndex from "./components/AcademicIndex";
 import AcademicAdvisor from "./components/AcademicAdvisor";
 import ScheduleCalendar from "./components/ScheduleCalendar";
 import { EXTERNAL_INFO } from "./data/externalRequirements";
+import { buildAcademicAdvice } from "./lib/academicAdvisor";
 import {
   downloadBackup,
   loadPlannerState,
@@ -12,6 +13,7 @@ import {
 } from "./lib/storage";
 import type {
   Course,
+  CourseDifficultyOverride,
   CourseStatus,
   CurriculumPlan,
   ElectiveGroup,
@@ -54,14 +56,6 @@ function courseList(): Course[] {
 const ALL_COURSES = courseList();
 const COURSE_BY_CODE = new Map(ALL_COURSES.map((course) => [course.code, course]));
 const GROUP_BY_ID = new Map(PLAN.groups.map((group) => [group.id, group]));
-
-function periodLabelForCourse(code: string): string {
-  const period = PLAN.periods.find((item) =>
-    item.courses.some((course) => course.code === code) ||
-    item.groups.some((groupId) => GROUP_BY_ID.get(groupId)?.options.some((course) => course.code === code))
-  );
-  return period?.label || "Electiva seleccionada";
-}
 
 function getInitialState(): PlannerState {
   return loadPlannerState(EXTERNAL_CODES);
@@ -311,69 +305,7 @@ function App() {
 
   const activeCourses = ALL_COURSES.filter((course) => statusOf(planner, course.code) !== "pending").length;
 
-  const academicAdvice = useMemo(() => {
-    const selectedElectives = PLAN.groups
-      .map((group) => {
-        const code = planner.selections[group.id];
-        return code ? COURSE_BY_CODE.get(code) : undefined;
-      })
-      .filter((course): course is Course => !!course);
-    const candidates = Array.from(new Map(
-      [...PLAN.periods.flatMap((period) => period.courses), ...selectedElectives]
-        .map((course) => [course.code, course])
-    ).values());
-
-    const dependents = new Map<string, Set<string>>();
-    for (const course of candidates) {
-      for (const requirement of course.req || []) {
-        if (!COURSE_BY_CODE.has(requirement)) continue;
-        const list = dependents.get(requirement) || new Set<string>();
-        list.add(course.code);
-        dependents.set(requirement, list);
-      }
-    }
-
-    const countDownstream = (code: string, visited = new Set<string>()): number => {
-      let total = 0;
-      for (const dependent of dependents.get(code) || []) {
-        if (visited.has(dependent)) continue;
-        visited.add(dependent);
-        total += 1 + countDownstream(dependent, visited);
-      }
-      return total;
-    };
-
-    const recommendations = candidates
-      .filter((course) =>
-        statusOf(planner, course.code) === "pending" &&
-        blockersFor(course, planner).length === 0
-      )
-      .map((course) => ({
-        course,
-        unlocks: countDownstream(course.code),
-        periodLabel: periodLabelForCourse(course.code)
-      }))
-      .sort((a, b) => b.unlocks - a.unlocks || a.course.code.localeCompare(b.course.code))
-      .slice(0, 3);
-
-    const currentPeriodIndex = PLAN.periods.findIndex((period) => period.id === planner.meta.currentPeriod);
-    const laggedCourses = currentPeriodIndex < 0
-      ? []
-      : PLAN.periods.slice(0, currentPeriodIndex).flatMap((period) =>
-          period.courses
-            .filter((course) =>
-              statusOf(planner, course.code) === "pending" &&
-              blockersFor(course, planner).length === 0
-            )
-            .map((course) => ({ course, periodLabel: period.label }))
-        ).slice(0, 6);
-
-    return {
-      recommendations,
-      laggedCourses,
-      hasCurrentPeriod: currentPeriodIndex >= 0
-    };
-  }, [planner]);
+  const academicAdvice = useMemo(() => buildAcademicAdvice(PLAN, planner), [planner]);
 
   const handleImport = async (file?: File) => {
     if (!file) return;
@@ -387,6 +319,16 @@ function App() {
     } finally {
       if (importRef.current) importRef.current.value = "";
     }
+  };
+
+  const updateCourseDifficulty = (
+    courseCode: string,
+    value: CourseDifficultyOverride | null
+  ) => {
+    const courseDifficultyOverrides = { ...(planner.courseDifficultyOverrides || {}) };
+    if (value) courseDifficultyOverrides[courseCode] = value;
+    else delete courseDifficultyOverrides[courseCode];
+    persistState({ ...planner, courseDifficultyOverrides });
   };
 
   const openAdvisorCourse = (courseCode: string) => {
@@ -549,11 +491,10 @@ function App() {
               <div className="progress-caption"><span>{approved} créditos completados</span><span>{PLAN.totalCredits - approved} por completar</span></div>
             </section>
             <AcademicAdvisor
-              recommendations={academicAdvice.recommendations}
-              laggedCourses={academicAdvice.laggedCourses}
-              hasCurrentPeriod={academicAdvice.hasCurrentPeriod}
+              {...academicAdvice}
               onOpenCourse={openAdvisorCourse}
               onConfigurePeriod={() => setPage("meta")}
+              onDifficultyChange={updateCourseDifficulty}
             />
             <section className="two-column">
               <div className="paper-card">
