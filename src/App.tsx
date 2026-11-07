@@ -11,6 +11,7 @@ import { buildAcademicAdvice } from "./lib/academicAdvisor";
 import { buildHomeScheduleSummary } from "./lib/scheduleSummary";
 import { isSupabaseConfigured, supabase } from "./lib/supabase";
 import {
+  getCloudPlannerRecord,
   hasPlannerData,
   overwriteCloudWithLocal,
   syncPlannerState
@@ -243,24 +244,53 @@ function App() {
     }
   };
 
-  const useCloudVersion = () => {
-    if (!syncConflict) return;
+  const useCloudVersion = async () => {
+    if (!supabase || !session || !syncConflict) return;
 
     const accepted = window.confirm(
       "La versión guardada en la nube reemplazará el progreso de este dispositivo. " +
-      "Antes se descargará un respaldo JSON de tu versión local. ¿Continuar?"
+      "Antes se descargará un respaldo JSON de tu versión local cuando exista progreso. ¿Continuar?"
     );
     if (!accepted) return;
 
+    setSyncBusy(true);
+    setSyncMessage("Verificando que la versión de la nube siga siendo la misma…");
+
     try {
+      const latest = await getCloudPlannerRecord(supabase, session.user.id, EXTERNAL_CODES);
+
+      if (!latest) {
+        setSyncConflict(null);
+        setSyncMessage("La copia de la nube ya no existe. Tu progreso local permanece intacto; vuelve a sincronizar para crear una copia nueva.");
+        return;
+      }
+
+      if (latest.revision !== syncConflict.remoteRevision) {
+        setSyncConflict({
+          status: "conflict",
+          reason: "concurrent-update",
+          remoteState: latest.state,
+          remoteRevision: latest.revision,
+          remoteUpdatedAt: latest.updatedAt
+        });
+        setSyncMessage("La nube cambió mientras revisabas el conflicto. No se reemplazó el progreso local; revisa la versión más reciente.");
+        return;
+      }
+
       if (hasPlannerData(planner)) downloadBackup(planner);
-      setPlanner(syncConflict.remoteState);
+      setPlanner(latest.state);
       setSyncConflict(null);
-      setSyncMessage("Se conservó la versión de la nube. Tu versión anterior quedó guardada en un respaldo JSON.");
+      setSyncMessage(
+        hasPlannerData(planner)
+          ? "Se conservó la versión de la nube. Tu versión local anterior quedó guardada en un respaldo JSON."
+          : "Se descargó la versión actual de la nube."
+      );
     } catch (error) {
       setSyncMessage(error instanceof Error
-        ? "No se pudo preparar el respaldo local: " + error.message
-        : "No se pudo preparar el respaldo local. No se reemplazó tu progreso.");
+        ? "No se pudo comprobar la versión de la nube: " + error.message
+        : "No se pudo comprobar la versión de la nube. Tu progreso local permanece intacto.");
+    } finally {
+      setSyncBusy(false);
     }
   };
 
@@ -974,7 +1004,7 @@ function App() {
         syncMessage={syncMessage}
         syncConflict={syncConflict}
         onSyncNow={syncNow}
-        onUseCloud={useCloudVersion}
+        onUseCloud={() => void useCloudVersion()}
         onKeepLocal={() => void keepLocalVersion()}
         onClose={() => setShowAccount(false)}
       />
