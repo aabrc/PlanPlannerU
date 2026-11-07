@@ -108,8 +108,6 @@ function estimateDifficulty(
       metadata.difficulty >= 1 &&
       metadata.difficulty <= 5) {
     score = metadata.difficulty;
-  } else if (metadata?.courseType === "lab" || course.credits === 0 || /laboratorio/i.test(course.name)) {
-    score = 2;
   } else {
     const description = (course.code + " " + course.name).normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "").toLowerCase();
@@ -127,10 +125,8 @@ function estimateDifficulty(
     }
   }
 
-  // Credits add only a small adjustment. They never determine the difficulty category.
-  if (course.credits >= 4) score += 0.12;
-  else if (course.credits === 3) score += 0.05;
-  else if (course.credits <= 1) score -= 0.2;
+  // Credits are intentionally excluded from this score: they measure index weight,
+  // not the student's personal experience or the difficulty of the subject.
 
   score = clamp(score, 1, 5);
   return {
