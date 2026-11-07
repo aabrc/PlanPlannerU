@@ -298,9 +298,12 @@ export function buildAcademicAdvice(
       state.courseStates[course.code] !== "inprogress"
     )
     .map((course) => {
-      const coursePeriodIndex = plan.periods.findIndex((period) =>
-        period.courses.some((item) => item.code === course.code)
-      );
+      // A selected elective belongs to the period that contains its group,
+      // even though it is stored in group.options rather than period.courses.
+      const coursePeriod = periodForCourse(plan, course.code);
+      const coursePeriodIndex = coursePeriod
+        ? plan.periods.findIndex((period) => period.id === coursePeriod.id)
+        : -1;
       const isLagged = currentPeriodIndex >= 0 &&
         coursePeriodIndex >= 0 &&
         coursePeriodIndex < currentPeriodIndex;
