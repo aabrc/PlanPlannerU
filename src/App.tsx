@@ -12,8 +12,8 @@ import {
   savePlannerState
 } from "./lib/storage";
 import type {
+  AdvisorCourseProfile,
   Course,
-  CourseDifficultyOverride,
   CourseStatus,
   CurriculumPlan,
   ElectiveGroup,
@@ -321,14 +321,25 @@ function App() {
     }
   };
 
-  const updateCourseDifficulty = (
+  const updateAdvisorCourseProfile = (
     courseCode: string,
-    value: CourseDifficultyOverride | null
+    patch: Partial<AdvisorCourseProfile>
   ) => {
-    const courseDifficultyOverrides = { ...(planner.courseDifficultyOverrides || {}) };
-    if (value) courseDifficultyOverrides[courseCode] = value;
-    else delete courseDifficultyOverrides[courseCode];
-    persistState({ ...planner, courseDifficultyOverrides });
+    const advisorCourseProfiles = { ...(planner.advisorCourseProfiles || {}) };
+    const current = advisorCourseProfiles[courseCode] || {};
+    const updated: AdvisorCourseProfile = { ...current, ...patch };
+
+    for (const key of Object.keys(patch) as (keyof AdvisorCourseProfile)[]) {
+      if (patch[key] === undefined) delete updated[key];
+    }
+
+    if (Object.keys(updated).length > 0) {
+      advisorCourseProfiles[courseCode] = updated;
+    } else {
+      delete advisorCourseProfiles[courseCode];
+    }
+
+    persistState({ ...planner, advisorCourseProfiles });
   };
 
   const openAdvisorCourse = (courseCode: string) => {
@@ -494,7 +505,7 @@ function App() {
               {...academicAdvice}
               onOpenCourse={openAdvisorCourse}
               onConfigurePeriod={() => setPage("meta")}
-              onDifficultyChange={updateCourseDifficulty}
+              onProfileChange={updateAdvisorCourseProfile}
             />
             <section className="two-column">
               <div className="paper-card">
