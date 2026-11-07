@@ -110,7 +110,7 @@ export default function AccountDialog({
       const { error } = await supabaseClient.auth.signOut({ scope: "local" });
       if (error) throw error;
       setMessage("Se cerró la sesión de este dispositivo.");
-      setTimeout(onClose, 250);
+      onClose();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "No se pudo cerrar la sesión.");
     } finally {
