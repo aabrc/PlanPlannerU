@@ -1,4 +1,5 @@
 export type CourseStatus = "pending" | "inprogress" | "approved";
+export type CourseDifficultyOverride = "light" | "moderate" | "demanding";
 export interface Course {
   id?: string;
   code: string;
@@ -8,6 +9,11 @@ export interface Course {
   additional?: string[];
   gate?: { percent: number; label?: string } | null;
   lab?: string;
+  advisorProfile?: {
+    courseType?: "language" | "elective" | "professional-elective" | "lab" | "theory" | "technical" | "mixed";
+    difficulty?: number;
+    area?: string;
+  };
   [key: string]: unknown;
 }
 export interface ElectiveGroup {
@@ -69,6 +75,7 @@ export interface PlannerState {
   scheduleEvents: ScheduleEvent[];
   scheduleView: ScheduleViewRange;
   gradeAttempts: GradeAttempt[];
+  courseDifficultyOverrides?: Record<string, CourseDifficultyOverride>;
   meta: {
     currentPeriod: string;
     loadPerTerm: string;
