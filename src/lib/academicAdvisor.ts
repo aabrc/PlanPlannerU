@@ -109,7 +109,7 @@ function estimateDifficulty(
       metadata.difficulty >= 1 &&
       metadata.difficulty <= 5) {
     score = metadata.difficulty;
-  } else if (metadata?.courseType === "lab" || course.credits === 0) {
+  } else if (metadata?.courseType === "lab" || course.credits === 0 || /laboratorio/i.test(course.name)) {
     score = 2;
   } else if (metadata?.courseType === "language" || course.code.startsWith("ILE")) {
     // Language courses often have a lighter technical load; credits remain separate.
