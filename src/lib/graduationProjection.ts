@@ -11,6 +11,12 @@ export interface GraduationProjection {
   exceedsPlan: boolean;
 }
 
+export function normalizeCreditsPerTerm(value: unknown): number {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) return 15;
+  return Math.floor(Math.min(30, Math.max(1, parsed)));
+}
+
 function getApprovedCredits(plan: CurriculumPlan, state: PlannerState): number {
   const courses = new Map<string, Course>();
   for (const period of plan.periods) {
@@ -54,10 +60,7 @@ export function calculateGraduationProjection(
 ): GraduationProjection {
   const approvedCredits = getApprovedCredits(plan, state);
   const remainingCredits = Math.max(0, plan.totalCredits - approvedCredits);
-  const rawTarget = Number(state.meta.loadPerTerm);
-  const creditsPerTerm = Number.isFinite(rawTarget) && rawTarget > 0
-    ? Math.min(30, Math.max(1, rawTarget))
-    : 15;
+  const creditsPerTerm = normalizeCreditsPerTerm(state.meta.loadPerTerm);
 
   if (remainingCredits === 0) {
     return {
