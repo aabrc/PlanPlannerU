@@ -356,9 +356,25 @@ function App() {
   };
 
   const setMeta = (key: string, value: string) => {
+    let normalizedValue = value;
+
+    if (key === "internship") {
+      const hours = value.trim() === "" ? 0 : Number(value);
+      if (Number.isFinite(hours)) {
+        normalizedValue = String(Math.floor(Math.min(320, Math.max(0, hours))));
+      }
+    } else if (key === "loadPerTerm" || key === "gpa") {
+      const number = value.trim() === "" ? null : Number(value);
+      if (number !== null && Number.isFinite(number)) {
+        const min = key === "gpa" ? 0 : 1;
+        const max = key === "gpa" ? 4 : 30;
+        normalizedValue = String(Math.min(max, Math.max(min, number)));
+      }
+    }
+
     persistState({
       ...planner,
-      meta: { ...planner.meta, [key]: value }
+      meta: { ...planner.meta, [key]: normalizedValue }
     });
   };
 
