@@ -3,7 +3,7 @@ name: Validate PlanPlannerU React migration
 on:
   push:
     branches:
-      - feature/react-vite-migration
+      - feature/react-vite-migration-clean
   pull_request:
     branches:
       - main
