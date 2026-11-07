@@ -1,5 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { PlannerState } from "../types";
+import type { Database, Json } from "../types/database";
+
+type PlannerSupabaseClient = SupabaseClient<Database>;
 import { normalizePlannerState } from "./storage";
 
 export interface CloudPlannerRecord {
@@ -32,11 +35,11 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function cloudState(state: PlannerState): Record<string, unknown> {
+function cloudState(state: PlannerState): Json {
   const persisted: Record<string, unknown> = { ...state };
   delete persisted._syncUpdatedAt;
   delete persisted._syncRevision;
-  return persisted;
+  return persisted as unknown as Json;
 }
 
 function stableValue(value: unknown): unknown {
@@ -126,7 +129,7 @@ export function getOrCreateDeviceId(): string {
 }
 
 async function readRemote(
-  client: SupabaseClient,
+  client: PlannerSupabaseClient,
   userId: string,
   externalCodes: string[]
 ): Promise<CloudPlannerRecord | null> {
@@ -169,7 +172,7 @@ function conflict(remote: CloudPlannerRecord, reason: SyncConflictReason): Plann
 }
 
 async function insertLocal(
-  client: SupabaseClient,
+  client: PlannerSupabaseClient,
   userId: string,
   local: PlannerState,
   deviceId: string,
@@ -207,7 +210,7 @@ async function insertLocal(
 }
 
 async function updateLocal(
-  client: SupabaseClient,
+  client: PlannerSupabaseClient,
   userId: string,
   local: PlannerState,
   deviceId: string,
@@ -254,7 +257,7 @@ async function updateLocal(
  * It never overwrites a non-empty remote state on first sign-in without user choice.
  */
 export async function syncPlannerState(
-  client: SupabaseClient,
+  client: PlannerSupabaseClient,
   userId: string,
   localState: PlannerState,
   externalCodes: string[],
@@ -300,7 +303,7 @@ export async function syncPlannerState(
 
 /** Overwrites the cloud copy only when the revision shown in the conflict dialog is still current. */
 export async function overwriteCloudWithLocal(
-  client: SupabaseClient,
+  client: PlannerSupabaseClient,
   userId: string,
   localState: PlannerState,
   expectedRemoteRevision: number,
