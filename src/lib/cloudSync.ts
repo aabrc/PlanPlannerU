@@ -85,12 +85,19 @@ export function decideSyncAction(local: PlannerState, remote: PlannerState): Syn
   const localHasData = hasPlannerData(local);
   const remoteHasData = hasPlannerData(remote);
 
+  // A known local revision means this device has previously synchronized.
+  // Any mismatch must be resolved explicitly, even when one side is now empty.
+  if (local._syncRevision !== undefined &&
+      local._syncRevision !== remote._syncRevision) {
+    return "conflict";
+  }
+
   if (!localHasData && remoteHasData) return "download";
   if (localHasData && !remoteHasData) return "upload";
   if (!localHasData && !remoteHasData) return "synced";
 
+  // Two populated states on a first login have no common baseline.
   if (local._syncRevision === undefined) return "conflict";
-  if (local._syncRevision !== remote._syncRevision) return "conflict";
 
   return arePlannerStatesEqual(local, remote) ? "synced" : "upload";
 }
