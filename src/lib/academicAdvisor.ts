@@ -389,14 +389,27 @@ export function buildAcademicAdvice(
     .filter(({ isLagged, recommendation }) =>
       isLagged && !recommendedCodes.has(recommendation.course.code)
     )
-    .sort((a, b) =>
-      Number(b.recommendation.canEnroll) - Number(a.recommendation.canEnroll) ||
-      b.recommendation.directUnlocks - a.recommendation.directUnlocks ||
-      b.recommendation.unlocks - a.recommendation.unlocks ||
-      b.recommendation.priorityScore - a.recommendation.priorityScore ||
-      a.recommendation.difficulty.score - b.recommendation.difficulty.score ||
-      a.recommendation.course.code.localeCompare(b.recommendation.course.code)
-    )
+    .sort((a, b) => {
+      const periodA = plan.periods.findIndex((period) =>
+        period.courses.some((course) => course.code === a.recommendation.course.code)
+      );
+      const periodB = plan.periods.findIndex((period) =>
+        period.courses.some((course) => course.code === b.recommendation.course.code)
+      );
+
+      // Proximity to the student's current academic period comes first.
+      if (periodA !== periodB) return periodB - periodA;
+
+      // Within the same period, prioritize actionable courses that unlock others.
+      return (
+        Number(b.recommendation.canEnroll) - Number(a.recommendation.canEnroll) ||
+        b.recommendation.directUnlocks - a.recommendation.directUnlocks ||
+        b.recommendation.unlocks - a.recommendation.unlocks ||
+        b.recommendation.priorityScore - a.recommendation.priorityScore ||
+        a.recommendation.difficulty.score - b.recommendation.difficulty.score ||
+        a.recommendation.course.code.localeCompare(b.recommendation.course.code)
+      );
+    })
     .slice(0, 5)
     .map(({ recommendation }) => recommendation);
 
