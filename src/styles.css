@@ -1596,3 +1596,8 @@ button, input, select, textarea { font-size: 14px; }
   .advisor-difficulty-control { width: 100%; justify-content: space-between; }
   .advisor-difficulty-control select { max-width: none; }
 }
+
+.advisor-estimate-source {
+  color: #627889;
+  font-size: 10px;
+}
