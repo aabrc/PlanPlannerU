@@ -6,6 +6,7 @@ import { calculateGraduationProjection, normalizeCreditsPerTerm } from "./lib/gr
 import ScheduleCalendar from "./components/ScheduleCalendar";
 import { EXTERNAL_INFO } from "./data/externalRequirements";
 import { buildAcademicAdvice } from "./lib/academicAdvisor";
+import { buildHomeScheduleSummary } from "./lib/scheduleSummary";
 import {
   downloadBackup,
   loadPlannerState,
@@ -75,7 +76,17 @@ function normalizeSearchText(value: string): string {
 }
 
 function courseSearchText(course: Course): string {
-  return [course.code, course.name, course.id || ""].join(" ");
+  const electiveGroups = PLAN.groups
+    .filter((group) => group.options.some((option) => option.code === course.code))
+    .map((group) => group.name);
+  return [
+    course.code,
+    course.name,
+    course.id || "",
+    ...(course.req || []),
+    ...(course.additional || []),
+    ...electiveGroups
+  ].join(" ");
 }
 
 function approvedCredits(state: PlannerState): number {
@@ -172,8 +183,22 @@ function App() {
 
   const approved = useMemo(() => approvedCredits(planner), [planner]);
   const progress = Math.min(100, Math.round((approved / PLAN.totalCredits) * 100));
-  const inProgressCount = Object.values(planner.courseStates).filter((value) => value === "inprogress").length;
-  const approvedCount = Object.values(planner.courseStates).filter((value) => value === "approved").length;
+  const trackedCourses = useMemo(() => {
+    const selectedElectives = Object.values(planner.selections)
+      .map((code) => COURSE_BY_CODE.get(code))
+      .filter((course): course is Course => Boolean(course));
+    return Array.from(new Map(
+      [...PLAN.periods.flatMap((period) => period.courses), ...selectedElectives]
+        .map((course) => [course.code, course])
+    ).values());
+  }, [planner.selections]);
+  const inProgressCount = trackedCourses.filter((course) => statusOf(planner, course.code) === "inprogress").length;
+  const approvedCount = trackedCourses.filter((course) => statusOf(planner, course.code) === "approved").length;
+  const activeCourses = trackedCourses.filter((course) => statusOf(planner, course.code) !== "pending").length;
+  const homeScheduleSummary = useMemo(
+    () => buildHomeScheduleSummary(planner.scheduleEvents),
+    [planner.scheduleEvents]
+  );
 
   const query = normalizeSearchText(search);
   const queryTerms = query ? query.split(/\s+/).filter(Boolean) : [];
@@ -378,13 +403,16 @@ function App() {
     });
   };
 
-  const renderCourse = (course: Course) => {
+  const renderCourse = (course: Course, offeredPeriod: Period) => {
     const status = statusOf(planner, course.code);
     const blockers = blockersFor(course, planner);
     const isBlocked = status === "pending" && blockers.length > 0;
-    const currentIndex = PLAN.periods.findIndex((period) => period.id === planner.meta.currentPeriod);
-    const offeredIndex = PLAN.periods.findIndex((period) => period.courses.some((item) => item.code === course.code));
-    const lagged = status === "pending" && currentIndex >= 0 && offeredIndex >= 0 && offeredIndex < currentIndex;
+    const currentPeriod = PLAN.periods.find((period) => period.id === planner.meta.currentPeriod);
+    const lagged = status === "pending" && Boolean(
+      currentPeriod &&
+      (offeredPeriod.year < currentPeriod.year ||
+        (offeredPeriod.year === currentPeriod.year && offeredPeriod.term < currentPeriod.term))
+    );
     const className = status === "approved" ? "course-card approved" :
       status === "inprogress" ? "course-card inprogress" :
       lagged ? "course-card lagged" :
@@ -420,18 +448,30 @@ function App() {
     );
   };
 
-  const renderElective = (group: ElectiveGroup, matchingOptions: Course[]) => {
+  const renderElective = (group: ElectiveGroup, matchingOptions: Course[], offeredPeriod: Period) => {
     const selectedCode = planner.selections[group.id] || "";
     const selected = selectedCode ? COURSE_BY_CODE.get(selectedCode) : undefined;
     const selectedStatus = selected ? statusOf(planner, selected.code) : "pending";
+    const selectedBlockers = selected ? blockersFor(selected, planner) : [];
+    const selectedBlocked = selectedStatus === "pending" && selectedBlockers.length > 0;
+    const currentPeriod = PLAN.periods.find((period) => period.id === planner.meta.currentPeriod);
+    const lagged = !!selected && selectedStatus === "pending" && Boolean(
+      currentPeriod &&
+      (offeredPeriod.year < currentPeriod.year ||
+        (offeredPeriod.year === currentPeriod.year && offeredPeriod.term < currentPeriod.term))
+    );
     const done = !!selected && selectedStatus === "approved" && selected.credits >= group.minCredits;
     const selectedOutsideMatches = !!selected && !matchingOptions.some((course) => course.code === selected.code);
+    const badgeLabel = done ? "Completada" : lagged ? "Atrasada" :
+      selectedBlocked ? "Bloqueada" : selectedStatus === "inprogress" ? "En curso" : "Por elegir / completar";
+    const badgeClass = done ? "approved" : lagged ? "lagged" :
+      selectedBlocked ? "blocked" : selectedStatus === "inprogress" ? "inprogress" : "pending";
 
     return (
-      <div className="elective-card" key={group.id}>
+      <div className={"elective-card" + (lagged ? " lagged" : "")} key={group.id}>
         <div className="elective-heading">
           <h4>{group.name}</h4>
-          <span className={"status-badge " + (done ? "approved" : "pending")}>{done ? "Completada" : "Por completar"}</span>
+          <span className={"status-badge " + badgeClass}>{badgeLabel}</span>
         </div>
         <label className="field-label" htmlFor={"elective-" + group.id}>Seleccionar asignatura</label>
         <select
@@ -459,6 +499,7 @@ function App() {
             </button>
           </div>
         )}
+        {selectedBlocked && <small className="blocker-text">Por cumplir: {selectedBlockers.join(", ")}</small>}
         <small>Requisito: {group.minCourses} asignatura(s), al menos {group.minCredits} crédito(s).</small>
       </div>
     );
@@ -525,12 +566,40 @@ function App() {
               onConfigurePeriod={() => setPage("meta")}
               onProfileChange={updateAdvisorCourseProfile}
             />
-            <section className="two-column">
+            <section className="home-dashboard-grid">
               <div className="paper-card">
                 <span className="eyebrow">CONTINÚA DONDE TE QUEDASTE</span>
                 <h2>Tu plan académico</h2>
                 <p>Las asignaturas aprobadas, en curso y pendientes se conservan en el almacenamiento de este navegador.</p>
                 <button className="secondary-button" type="button" onClick={() => setPage("plan")}>Ver asignaturas</button>
+              </div>
+              <div className="paper-card">
+                <span className="eyebrow">ORGANIZACIÓN PERSONAL</span>
+                <h2>Tu semana también importa</h2>
+                <p>Clases, estudio, descanso y actividades personales en un solo lugar.</p>
+                {homeScheduleSummary.scheduledCount > 0 || homeScheduleSummary.pendingCourseCount > 0 ? (
+                  <>
+                    <div className="home-schedule-count">
+                      {homeScheduleSummary.scheduledCount} {homeScheduleSummary.scheduledCount === 1 ? "bloque organizado" : "bloques organizados"}
+                    </div>
+                    {homeScheduleSummary.pendingCourseCount > 0 && (
+                      <p className="home-schedule-pending">
+                        {homeScheduleSummary.pendingCourseCount} materia{homeScheduleSummary.pendingCourseCount === 1 ? "" : "s"} en curso pendiente{homeScheduleSummary.pendingCourseCount === 1 ? "" : "s"} de asignar a días y horas.
+                      </p>
+                    )}
+                    <div className="home-schedule-list">
+                      {homeScheduleSummary.items.map((item) => (
+                        <div className="home-schedule-item" key={item.id}>
+                          <strong>{item.title}</strong>
+                          <small>{item.days} · {item.time}</small>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <p className="home-schedule-empty">Todavía no tienes actividades en tu horario. Marca una materia como En curso o agrega tus rutinas personales.</p>
+                )}
+                <button className="secondary-button" type="button" onClick={() => setPage("schedule")}>Abrir mi horario</button>
               </div>
               <div className="paper-card">
                 <span className="eyebrow">RESPALDOS</span>
@@ -595,7 +664,7 @@ function App() {
               const summary = periodSummary(period, planner);
               const isOpen = expanded.includes(period.id) || hasActiveCatalogFilters;
               const electiveGroups = groups.map(({ group, options }) => (
-                <div className="course-grid" key={group.id}>{renderElective(group, options)}</div>
+                <div className="course-grid" key={group.id}>{renderElective(group, options, period)}</div>
               ));
               return (
                 <details className={summary.complete ? "period-card complete" : "period-card"} key={period.id} open={isOpen} onToggle={(event) => {
@@ -606,7 +675,7 @@ function App() {
                     <span className="period-progress">{summary.credits} / {summary.target} cr.</span>
                   </summary>
                   <div className="period-body">
-                    {courses.length > 0 && <div className="course-grid">{courses.map(renderCourse)}</div>}
+                    {courses.length > 0 && <div className="course-grid">{courses.map((course) => renderCourse(course, period))}</div>}
                     {groups.length > 0 && <div className="elective-section"><h3>Electivas de este período</h3>{electiveGroups}</div>}
                   </div>
                 </details>
