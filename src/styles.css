@@ -695,7 +695,17 @@ button, input, select, textarea { font-size: 14px; }
 .calendar-time-axis { grid-column: 1; grid-row: 2; position: relative; background: #f7fafb; border-right: 1px solid #d8e1e6; }
 .calendar-time-axis span { position: absolute; left: 2px; right: 2px; transform: translateY(-50%); color: #40596c; font-size: 10px; font-weight: 700; font-variant-numeric: tabular-nums; text-align: center; white-space: nowrap; }
 .calendar-day-lane { grid-row: 2; position: relative; min-width: 0; border-left: 1px solid #e1e8ec; background: #fff; }
-.calendar-hour-line { position: absolute; z-index: 0; left: 0; right: 0; border-top: 1px solid #dce5ea; pointer-events: none; }
+.calendar-hour-cell {
+  position: absolute;
+  z-index: 0;
+  left: 0;
+  right: 0;
+  box-sizing: border-box;
+  border: 1px solid #dce5ea;
+  background: #fff;
+  pointer-events: none;
+}
+.calendar-hour-cell.alternate { background: #f8fbfd; }
 .calendar-event-react { position: absolute; z-index: 2; display: flex; flex-direction: column; align-items: flex-start; gap: 3px; overflow: hidden; padding: 5px 6px; border: 1px solid; border-left-width: 4px; border-radius: 6px; text-align: left; cursor: pointer; font-size: 10px; line-height: 1.3; box-shadow: 0 1px 3px #20374b12; }
 .calendar-event-react:hover { z-index: 5; filter: saturate(1.12); box-shadow: 0 3px 8px #20374b22; }
 .calendar-event-react strong { width: 100%; overflow-wrap: anywhere; font-size: 10px; }
@@ -962,14 +972,17 @@ button, input, select, textarea { font-size: 14px; }
     background: #fff !important;
     overflow: hidden;
   }
-  .schedule-print-hour-line {
+  .schedule-print-hour-cell {
     position: absolute;
     z-index: 0;
     left: 0;
     right: 0;
-    border-top: 1px solid #dfe7ec;
+    box-sizing: border-box;
+    border: .5px solid #dfe7ec;
+    background: #fff !important;
     pointer-events: none;
   }
+  .schedule-print-hour-cell.alternate { background: #f8fafb !important; }
   .schedule-print-event {
     position: absolute;
     z-index: 1;
