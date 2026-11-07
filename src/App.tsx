@@ -329,7 +329,6 @@ function App() {
     total + entry.courses.length + entry.groups.reduce((groupTotal, group) => groupTotal + group.options.length, 0), 0
   );
 
-  const activeCourses = ALL_COURSES.filter((course) => statusOf(planner, course.code) !== "pending").length;
 
   const academicAdvice = useMemo(() => buildAcademicAdvice(PLAN, planner), [planner]);
   const graduationProjection = useMemo(() => calculateGraduationProjection(PLAN, planner), [planner]);
