@@ -10,7 +10,7 @@ La rama `main` se mantiene separada mientras se completa y valida la migración.
 
 - React 19 + TypeScript
 - Vite 6
-- Supabase JS 2: autenticación por enlace mágico implementada; sincronización académica pendiente
+- Supabase JS 2: autenticación por enlace mágico y sincronización manual con control de conflictos
 - Capacitor 7: configuración inicial para Android/iOS
 
 ## Requisitos
@@ -54,7 +54,7 @@ GitHub Actions ejecuta `npm ci`, las pruebas automatizadas y la compilación en 
 
 ## Persistencia local
 
-El progreso académico se guarda automáticamente en el navegador mediante `localStorage`. Los estados, electivas, horario, calificaciones y perfiles del asesor todavía no se sincronizan con una cuenta. Iniciar sesión solo identifica al usuario: no copia ni reemplaza datos académicos en Supabase. Exporta respaldos JSON antes de cambiar de navegador o limpiar los datos del sitio.
+El progreso académico se guarda primero en el navegador mediante `localStorage`. Después de iniciar sesión puedes pulsar **Sincronizar ahora** desde el panel de cuenta. La primera sincronización descarga la copia remota cuando el dispositivo aún no tiene progreso o sube el progreso local cuando la nube todavía no tiene información. Si ambos lados contienen cambios y no comparten la misma revisión, la aplicación se detiene y permite elegir explícitamente la versión local o la versión de la nube. Antes de reemplazar el progreso local por la copia remota, se descarga un respaldo JSON cuando existe progreso local. La sincronización es manual; no se ejecuta automáticamente al editar materias. Exporta respaldos JSON antes de cambiar de navegador o limpiar los datos del sitio.
 
 La versión original se conserva en `legacy/index.html`; no se elimina durante esta fase de migración.
 
@@ -83,22 +83,22 @@ Si se utiliza otro dominio o puerto, añádelo explícitamente a la lista de red
 El proyecto ya contiene `public.user_planner_data`. La auditoría confirmó:
 
 - `user_id uuid`: clave primaria y referencia a `auth.users(id)` con eliminación en cascada.
-- `state jsonb NOT NULL`, `device_id text NOT NULL` y `updated_at timestamptz NOT NULL DEFAULT now()`.
+- `state jsonb NOT NULL`, `device_id text NOT NULL`, `updated_at timestamptz NOT NULL DEFAULT now()` y `revision bigint NOT NULL DEFAULT 1` con una restricción `revision >= 1`.
 - RLS habilitado. Las políticas de lectura, inserción y actualización se limitan a `authenticated` y comprueban que `user_id` coincida con `auth.uid()`.
 - `authenticated` tiene `SELECT`, `INSERT` y `UPDATE`; no tiene acceso anónimo ni política de eliminación.
 - La tabla tenía cero filas en la auditoría.
 
-Se optimizaron las tres políticas para evaluar `(select auth.uid())` sin cambiar la regla de propiedad. La migración `20261107025049_optimize_user_planner_data_rls.sql` está aplicada y versionada. Después de la corrección, los asesores de seguridad, rendimiento y salud no reportaron hallazgos.
+Se optimizaron las tres políticas para evaluar `(select auth.uid())` sin cambiar la regla de propiedad. La migración `20261107025049_optimize_user_planner_data_rls.sql` está aplicada y versionada. También se agregó `revision` mediante `20261107025852_add_revision_to_user_planner_data.sql`, sin recrear la tabla ni borrar datos. Después de ambas modificaciones, los asesores de seguridad, rendimiento y salud no reportaron hallazgos.
 
-**Importante:** la tabla y su esquema inicial son anteriores al historial de migraciones del repositorio. La migración registrada solo optimiza las políticas existentes; no crea ni recrea la tabla. No ejecutes un reinicio de la base de datos ni una migración que intente recrearla. Antes de activar la sincronización, hay que registrar el esquema preexistente de forma no destructiva e incorporar control de concurrencia para impedir que un dispositivo sobrescriba silenciosamente cambios recientes de otro.
+**Importante:** la tabla y su esquema inicial son anteriores al historial de migraciones del repositorio. Las migraciones registradas optimizan las políticas existentes y agregan la columna de revisión; no crean ni recrean la tabla. No ejecutes un reinicio de la base de datos ni una migración que intente recrearla. La sincronización compara revisiones y actualiza mediante una condición de versión (optimistic concurrency); si otro dispositivo guarda primero, la actualización no afecta la fila y se solicita una nueva decisión al usuario. El servicio de sincronización está en `src/lib/cloudSync.ts` y sus reglas principales se prueban en `src/lib/cloudSync.test.ts`.
 
-La aplicación todavía no implementa lectura, guardado ni sincronización del pensum con esa tabla.
+La sincronización actual es manual y de una sola fila JSON por usuario. Antes de producción falta completar la estrategia de instalación limpia de la base de datos, comprobar la disponibilidad de la Data API y ampliar pruebas de integración reales con cuentas y dos dispositivos.
 
 ## Pendiente antes de producción
 
 1. Documentar y registrar de forma no destructiva el esquema Supabase preexistente.
 2. Configurar SMTP propio para permitir registros fuera del equipo y, si se desea, usar OTP numérico.
-3. Implementar sincronización local-first por usuario, con detección y resolución de conflictos entre dispositivos y funcionamiento sin conexión.
+3. Ampliar y automatizar la sincronización local-first por usuario; validar conflictos reales con dos sesiones/dispositivos y recuperación sin conexión.
 4. Decidir y probar la estrategia de almacenamiento local (`localStorage` o IndexedDB) antes de migrar datos.
 5. Añadir Service Worker, instalación PWA y pruebas de actualización/caché.
 6. Ampliar las pruebas automatizadas y realizar validación manual en navegadores y dispositivos móviles.
