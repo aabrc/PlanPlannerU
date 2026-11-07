@@ -225,7 +225,9 @@ function App() {
         setPlanner(result.state);
         setSyncMessage("Tu progreso local se guardó en la nube. Revisión " + result.revision + ".");
       } else if (result.status === "downloaded") {
-        if (hasPlannerData(planner)) downloadBackup(planner);
+        if (hasPlannerData(planner)) {
+          downloadBackup(planner, "PlanPlannerU-respaldo-local.json");
+        }
         setPlanner(result.state);
         setSyncMessage("Se descargó la versión de la nube. Antes se generó un respaldo local.");
       } else if (result.status === "synced") {
@@ -277,7 +279,9 @@ function App() {
         return;
       }
 
-      if (hasPlannerData(planner)) downloadBackup(planner);
+      if (hasPlannerData(planner)) {
+        downloadBackup(planner, "PlanPlannerU-respaldo-local.json");
+      }
       setPlanner(latest.state);
       setSyncConflict(null);
       setSyncMessage(
@@ -308,7 +312,10 @@ function App() {
 
     try {
       if (hasPlannerData(syncConflict.remoteState)) {
-        downloadBackup(syncConflict.remoteState);
+        downloadBackup(
+          syncConflict.remoteState,
+          "PlanPlannerU-respaldo-nube-r" + syncConflict.remoteRevision + ".json"
+        );
       }
 
       const result = await overwriteCloudWithLocal(
@@ -324,7 +331,12 @@ function App() {
         setSyncConflict(null);
         setSyncMessage("Se conservó este dispositivo. La versión anterior de la nube se descargó como respaldo y la cuenta quedó en la revisión " + result.revision + ".");
       } else if (result.status === "conflict") {
-        if (hasPlannerData(result.remoteState)) downloadBackup(result.remoteState);
+        if (hasPlannerData(result.remoteState)) {
+          downloadBackup(
+            result.remoteState,
+            "PlanPlannerU-respaldo-nube-r" + result.remoteRevision + ".json"
+          );
+        }
         setSyncConflict(result);
         setSyncMessage("La nube cambió durante la operación. No se sobrescribió; se descargó un respaldo de la nueva versión. Revisa de nuevo las dos versiones.");
       } else {
