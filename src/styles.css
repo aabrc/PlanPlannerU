@@ -1290,3 +1290,47 @@ button, input, select, textarea { font-size: 14px; }
   .advisor-unlock-count, .advisor-available { text-align: left; }
 }
 
+/* Activity start/end selectors match the weekly view controls */
+.schedule-time-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 12px;
+}
+.schedule-time-select {
+  display: grid;
+  grid-template-rows: auto 42px;
+  align-content: start;
+  gap: 6px;
+  width: 100%;
+  min-width: 0;
+  margin: 13px 0;
+  color: #40596c;
+  font-size: 13px;
+  font-weight: 800;
+}
+.schedule-time-select > span {
+  display: block;
+  min-width: 0;
+  line-height: 1.35;
+}
+.schedule-time-select select {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  height: 42px;
+  min-height: 42px;
+  margin: 0;
+  padding: 8px 10px;
+  border: 1px solid #aebfc9;
+  border-radius: 9px;
+  background: #fff;
+  color: #203c54;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+@media (max-width: 420px) {
+  .schedule-time-fields { gap: 8px; }
+  .schedule-time-select select { padding: 7px 8px; font-size: 13px; }
+}
+
