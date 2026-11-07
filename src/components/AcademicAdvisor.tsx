@@ -40,6 +40,9 @@ function RecommendationCard({
           <span className={"advisor-difficulty-pill " + difficulty.level.toLowerCase()}>
             Esfuerzo {difficulty.level.toLowerCase()}
           </span>
+          <small className="advisor-estimate-source">
+            {difficulty.source === "ajustada por ti" ? "Ajustada según tu experiencia" : "Estimación inicial"}
+          </small>
           <label className="advisor-difficulty-control">
             <span>Dificultad estimada</span>
             <select
