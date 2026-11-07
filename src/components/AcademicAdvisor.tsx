@@ -21,7 +21,7 @@ const CHALLENGE_FACTORS: { value: AdvisorChallengeFactor; label: string }[] = [
   { value: "time-constraints", label: "Tiempo y otras responsabilidades" }
 ];
 
-function RecommendationCard({
+function RecommendationRow({
   item,
   index,
   onOpenCourse,
@@ -44,29 +44,43 @@ function RecommendationCard({
     });
   };
 
+  const difficultySource = difficulty.source === "ajustada por ti"
+    ? "Ajustada según tu experiencia"
+    : difficulty.source === "experiencia compartida"
+      ? "Experiencia compartida por " + (difficulty.sampleCount || 0) + " estudiantes"
+      : "Estimación inicial";
+
   return (
-    <article className="advisor-course">
-      <span className="advisor-course-rank">{index + 1}</span>
-      <div className="advisor-course-main">
-        <div className="advisor-course-topline">
+    <details className="advisor-course-row" key={course.code}>
+      <summary className="advisor-course-summary">
+        <span className="advisor-course-rank">{index + 1}</span>
+        <span className="advisor-course-summary-copy">
           <strong>{course.code}</strong>
-          <span className={item.unlocks > 0 ? "advisor-unlock-count" : "advisor-available"}>
-            {item.directUnlocks > 0
-              ? item.directUnlocks + (item.directUnlocks === 1 ? " desbloqueo directo" : " desbloqueos directos")
-              : item.unlocks > 0
-                ? item.unlocks + " materias relacionadas"
-                : "Disponible"}
-          </span>
+          <span>{course.name}</span>
+          <small>{item.periodLabel} · {course.credits} créditos</small>
+        </span>
+        <span className="advisor-course-summary-meta">
+          {item.directUnlocks > 0
+            ? item.directUnlocks + (item.directUnlocks === 1 ? " desbloqueo directo" : " desbloqueos directos")
+            : item.unlocks > 0
+              ? item.unlocks + " relacionadas"
+              : "Disponible"}
+        </span>
+        <span className="advisor-expand-mark" aria-hidden="true">⌄</span>
+      </summary>
+
+      <div className="advisor-course-detail">
+        <div className="advisor-course-detail-facts">
+          <span>{course.credits} créditos</span>
+          <span>Impacto potencial en índice: {item.indexImpact}</span>
+          {item.unlocks > 0 && <span>Abre camino a {item.unlocks} materias relacionadas</span>}
         </div>
-        <p>{course.name}</p>
-        <small>{item.periodLabel} · {course.credits} créditos · Impacto potencial en índice: {item.indexImpact}</small>
+
         <div className="advisor-estimate-row">
           <span className={"advisor-difficulty-pill " + difficulty.level.toLowerCase()}>
             Esfuerzo {difficulty.level.toLowerCase()}
           </span>
-          <small className="advisor-estimate-source">
-            {difficulty.source === "ajustada por ti" ? "Ajustada según tu experiencia" : "Estimación inicial"}
-          </small>
+          <small className="advisor-estimate-source">{difficultySource}</small>
           <label className="advisor-difficulty-control">
             <span>Dificultad para mí</span>
             <select
@@ -143,11 +157,11 @@ function RecommendationCard({
         <ul className="advisor-reasons">
           {item.reasons.map((reason) => <li key={reason}>{reason}</li>)}
         </ul>
-        <button type="button" onClick={() => onOpenCourse(course.code)}>
+        <button type="button" className="advisor-open-course" onClick={() => onOpenCourse(course.code)}>
           Ver en el pensum <span aria-hidden="true">↗</span>
         </button>
       </div>
-    </article>
+    </details>
   );
 }
 
@@ -170,8 +184,8 @@ function AcademicAdvisor({
           <span className="eyebrow">ORIENTACIÓN ACADÉMICA</span>
           <h2 id="advisor-title">Asesor académico</h2>
           <p>
-            Combina materias rezagadas, prerrequisitos, créditos, esfuerzo estimado
-            y la carga que deseas llevar. Los créditos no se interpretan como dificultad.
+            Prioriza las materias según tus pendientes, prerrequisitos, créditos,
+            carga académica y experiencia personal. Selecciona una asignatura para ver sus detalles.
           </p>
         </div>
         <span className="advisor-heading-mark" aria-hidden="true">✦</span>
@@ -191,15 +205,16 @@ function AcademicAdvisor({
             <span>{recommendations.length} sugerencias</span>
           </div>
           {recommendations.length ? (
-            <div className="advisor-course-list">
+            <div className="advisor-course-list" role="list">
               {recommendations.map((item, index) => (
-                <RecommendationCard
-                  key={item.course.code}
-                  item={item}
-                  index={index}
-                  onOpenCourse={onOpenCourse}
-                  onProfileChange={onProfileChange}
-                />
+                <div role="listitem" key={item.course.code}>
+                  <RecommendationRow
+                    item={item}
+                    index={index}
+                    onOpenCourse={onOpenCourse}
+                    onProfileChange={onProfileChange}
+                  />
+                </div>
               ))}
             </div>
           ) : (
@@ -226,30 +241,31 @@ function AcademicAdvisor({
               </button>
             </div>
           ) : laggedCourses.length ? (
-            <div className="advisor-course-list">
+            <div className="advisor-course-list" role="list">
               {laggedCourses.map((item, index) => (
-                <RecommendationCard
-                  key={item.course.code}
-                  item={item}
-                  index={index}
-                  onOpenCourse={onOpenCourse}
-                  onProfileChange={onProfileChange}
-                />
+                <div role="listitem" key={item.course.code}>
+                  <RecommendationRow
+                    item={item}
+                    index={index}
+                    onOpenCourse={onOpenCourse}
+                    onProfileChange={onProfileChange}
+                  />
+                </div>
               ))}
             </div>
           ) : (
             <p className="advisor-empty">
-              No aparecen materias pendientes de períodos anteriores que estén
-              libres de requisitos según tu registro actual.
+              No quedan materias rezagadas disponibles fuera de las prioridades
+              principales, o no hay asignaturas anteriores que cumplan los requisitos.
             </p>
           )}
         </section>
       </div>
       <p className="advisor-disclaimer">
         La dificultad automática es una estimación inicial, no una calificación oficial.
-        Puedes ajustarla según tu experiencia. El impacto en el índice depende de la nota
-        que obtengas: más créditos amplifican tanto una buena como una mala calificación.
-        La disponibilidad real depende de la oferta académica y de la confirmación de requisitos.
+        Más adelante podrá complementarse con experiencias compartidas y agregadas de estudiantes,
+        sin publicar perfiles individuales. El impacto en el índice depende de la nota que obtengas:
+        más créditos amplifican tanto una buena como una mala calificación.
       </p>
     </section>
   );
