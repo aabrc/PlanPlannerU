@@ -1951,3 +1951,82 @@ button, input, select, textarea { font-size: 14px; }
   .account-dialog-head { padding: 17px 17px 13px; }
   .account-dialog-body { padding: 16px 17px 18px; }
 }
+
+
+.account-sync-panel {
+  display: grid;
+  gap: 10px;
+  padding: 13px;
+  border: 1px solid #dbe3e6;
+  border-radius: 11px;
+  background: #f7faf9;
+}
+.account-sync-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.account-sync-heading strong {
+  color: #405b6d;
+  font: 700 15px Georgia, serif;
+}
+.account-sync-state {
+  flex: 0 0 auto;
+  padding: 4px 7px;
+  border: 1px solid #dce5e5;
+  border-radius: 7px;
+  background: #fff;
+  color: #6d7e83;
+  font-size: 9px;
+  font-weight: 800;
+}
+.account-sync-panel > p {
+  margin: 0;
+  color: #7b898e;
+  font-size: 10px;
+  line-height: 1.55;
+}
+.account-sync-message {
+  margin: 0;
+  padding: 9px 10px;
+  border: 1px solid #dfe7e7;
+  border-radius: 8px;
+  background: #fff;
+  color: #536c78;
+  font-size: 10px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+.account-conflict {
+  display: grid;
+  gap: 9px;
+  padding: 11px;
+  border: 1px solid #ead7bd;
+  border-radius: 9px;
+  background: #fcf5e9;
+}
+.account-conflict > strong {
+  color: #8b6840;
+  font-size: 11px;
+}
+.account-conflict > p,
+.account-conflict > small {
+  margin: 0;
+  color: #8e7a62;
+  font-size: 10px;
+  line-height: 1.55;
+}
+.account-conflict-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+}
+.account-conflict-actions .secondary-button {
+  min-height: 38px;
+  white-space: normal;
+  line-height: 1.35;
+}
+@media (max-width: 430px) {
+  .account-conflict-actions { grid-template-columns: 1fr; }
+}
