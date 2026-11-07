@@ -117,12 +117,12 @@ describe("cloud planner synchronization decisions", () => {
     expect(decideSyncAction(local, remote)).toBe("upload");
   });
 
-  it("does not interpret a customized empty state as academic progress", () => {
+  it("includes a customized schedule view in the synchronized planner data", () => {
     const local = {
       ...blankState(),
       scheduleView: { start: 480, end: 1080, lastVisibleDay: 4 }
     };
 
-    expect(hasPlannerData(local)).toBe(false);
+    expect(hasPlannerData(local)).toBe(true);
   });
 });
