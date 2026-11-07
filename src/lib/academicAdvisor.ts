@@ -1,4 +1,6 @@
+import { advisorInsightKey, MIN_COMMUNITY_INSIGHT_RESPONSES } from "./advisorInsights";
 import type {
+  AdvisorCommunityInsight,
   AdvisorChallengeFactor,
   AdvisorCourseProfile,
   Course,
@@ -13,8 +15,9 @@ export type IndexImpactLevel = "Alto" | "Medio" | "Bajo" | "Sin impacto directo"
 export interface CourseDifficultyEstimate {
   level: WorkloadLevel;
   score: number;
-  source: "automática" | "ajustada por ti";
+  source: "automática" | "ajustada por ti" | "experiencia compartida";
   override: CourseDifficultyOverride | null;
+  sampleCount?: number;
 }
 
 export interface AdvisorRecommendation {
@@ -93,7 +96,8 @@ function approvedCredits(plan: CurriculumPlan, state: PlannerState): number {
 
 function estimateDifficulty(
   course: Course,
-  profile?: AdvisorCourseProfile
+  profile?: AdvisorCourseProfile,
+  communityInsight?: AdvisorCommunityInsight
 ): CourseDifficultyEstimate {
   const override = profile?.difficultyOverride;
   const overrideScores: Record<CourseDifficultyOverride, number> = {
@@ -109,6 +113,21 @@ function estimateDifficulty(
       level: score <= 2.3 ? "Ligera" : score <= 3.5 ? "Moderada" : "Exigente",
       source: "ajustada por ti",
       override
+    };
+  }
+
+  if (communityInsight &&
+      communityInsight.responseCount >= MIN_COMMUNITY_INSIGHT_RESPONSES &&
+      Number.isFinite(communityInsight.meanDifficulty) &&
+      communityInsight.meanDifficulty >= 1 &&
+      communityInsight.meanDifficulty <= 5) {
+    const score = communityInsight.meanDifficulty;
+    return {
+      score,
+      level: score <= 2.3 ? "Ligera" : score <= 3.5 ? "Moderada" : "Exigente",
+      source: "experiencia compartida",
+      override: null,
+      sampleCount: communityInsight.responseCount
     };
   }
 
@@ -197,7 +216,8 @@ function countDownstream(
 
 export function buildAcademicAdvice(
   plan: CurriculumPlan,
-  state: PlannerState
+  state: PlannerState,
+  communityInsights: Record<string, AdvisorCommunityInsight> = {}
 ): AcademicAdvice {
   const allCourses = new Map<string, Course>();
   for (const period of plan.periods) {
@@ -268,7 +288,11 @@ export function buildAcademicAdvice(
       const directUnlocks = (dependents.get(course.code) || new Set<string>()).size;
       const unlocks = countDownstream(course.code, dependents);
       const profile = state.advisorCourseProfiles?.[course.code] || {};
-      const difficulty = estimateDifficulty(course, profile);
+      const curriculumId = plan.id || "";
+      const communityInsight = curriculumId
+        ? communityInsights[advisorInsightKey(curriculumId, course.code)]
+        : undefined;
+      const difficulty = estimateDifficulty(course, profile, communityInsight);
       const fitsTarget = course.credits === 0 ||
         activeCredits + course.credits <= targetCredits;
 
@@ -344,17 +368,25 @@ export function buildAcademicAdvice(
       a.course.code.localeCompare(b.course.code)
     );
 
+  // The main recommendation list owns the highest-ranked courses, including
+  // any lagged courses that deserve immediate attention. Never repeat those below.
+  const recommendations = ranked.slice(0, 5);
+  const recommendedCodes = new Set(recommendations.map((item) => item.course.code));
+
   const laggedCourses = ranked
     .filter((item) => {
       const courseIndex = plan.periods.findIndex((period) =>
         period.courses.some((course) => course.code === item.course.code)
       );
-      return currentPeriodIndex >= 0 && courseIndex >= 0 && courseIndex < currentPeriodIndex;
+      return currentPeriodIndex >= 0 &&
+        courseIndex >= 0 &&
+        courseIndex < currentPeriodIndex &&
+        !recommendedCodes.has(item.course.code);
     })
-    .slice(0, 6);
+    .slice(0, 5);
 
   return {
-    recommendations: ranked.slice(0, 4),
+    recommendations,
     laggedCourses,
     hasCurrentPeriod: currentPeriodIndex >= 0,
     targetCredits,
