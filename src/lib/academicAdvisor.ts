@@ -1,4 +1,5 @@
 import type {
+  AdvisorCourseProfile,
   Course,
   CourseDifficultyOverride,
   CurriculumPlan,
@@ -25,6 +26,7 @@ export interface AdvisorRecommendation {
   fitsTarget: boolean;
   reasons: string[];
   priorityScore: number;
+  profile: AdvisorCourseProfile;
 }
 
 export interface AcademicAdvice {
@@ -82,8 +84,9 @@ function approvedCredits(plan: CurriculumPlan, state: PlannerState): number {
 
 function estimateDifficulty(
   course: Course,
-  override?: CourseDifficultyOverride
+  profile?: AdvisorCourseProfile
 ): CourseDifficultyEstimate {
+  const override = profile?.difficultyOverride;
   const overrideScores: Record<CourseDifficultyOverride, number> = {
     light: 1.7,
     moderate: 3,
@@ -100,14 +103,15 @@ function estimateDifficulty(
     };
   }
 
-  const metadata = course.advisorProfile;
+  const metadata = course.advisorMetadata;
   let score: number;
 
-  if (typeof metadata?.difficulty === "number" &&
-      Number.isFinite(metadata.difficulty) &&
-      metadata.difficulty >= 1 &&
-      metadata.difficulty <= 5) {
-    score = metadata.difficulty;
+  if (metadata?.complexity === "introductory") {
+    score = 2.35;
+  } else if (metadata?.complexity === "intermediate") {
+    score = 3.15;
+  } else if (metadata?.complexity === "advanced") {
+    score = 4.05;
   } else {
     const description = (course.code + " " + course.name).normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "").toLowerCase();
@@ -254,10 +258,8 @@ export function buildAcademicAdvice(
         coursePeriodIndex < currentPeriodIndex;
       const directUnlocks = (dependents.get(course.code) || new Set<string>()).size;
       const unlocks = countDownstream(course.code, dependents);
-      const difficulty = estimateDifficulty(
-        course,
-        state.courseDifficultyOverrides?.[course.code]
-      );
+      const profile = state.advisorCourseProfiles?.[course.code] || {};
+      const difficulty = estimateDifficulty(course, profile);
       const fitsTarget = course.credits === 0 ||
         activeCredits + course.credits <= targetCredits;
 
@@ -295,9 +297,22 @@ export function buildAcademicAdvice(
       } else if (course.credits > 0) {
         reasons.push("Su peso directo en el índice es menor por tener pocos créditos");
       }
+      if (profile.readiness === "some-gaps") {
+        reasons.push("Has indicado que tienes algunas lagunas en los conocimientos previos");
+      } else if (profile.readiness === "needs-review") {
+        reasons.push("Has indicado que necesitas reforzar conocimientos antes de cursarla");
+      }
+      if (profile.experience === "challenging") {
+        reasons.push("Según tu experiencia, esta asignatura te ha resultado especialmente exigente");
+      } else if (profile.experience === "manageable") {
+        reasons.push("Según tu experiencia, has podido manejar su carga");
+      } else if (profile.experience === "as-expected") {
+        reasons.push("Su dificultad coincidió con tus expectativas");
+      }
 
       return {
         course,
+        profile,
         unlocks,
         directUnlocks,
         periodLabel: periodLabelForCourse(plan, course.code),
