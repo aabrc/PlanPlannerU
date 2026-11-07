@@ -142,10 +142,18 @@ export default function ScheduleCalendar({
     const centerMinute = (minute + nextBoundary) / 2;
     return {
       minute,
+      screenTop: ((minute - viewStart) / 60) * HOUR_HEIGHT,
+      screenHeight: ((nextBoundary - minute) / 60) * HOUR_HEIGHT,
       screenCenter: ((centerMinute - viewStart) / 60) * HOUR_HEIGHT,
+      printTop: ((minute - viewStart) / 60) * PRINT_HOUR_HEIGHT,
+      printHeight: ((nextBoundary - minute) / 60) * PRINT_HOUR_HEIGHT,
       printCenter: ((centerMinute - viewStart) / 60) * PRINT_HOUR_HEIGHT
     };
   });
+  // The selected end time determines the final boundary, so extending "Hasta"
+  // adds visible hour cells and increases the calendar and PDF height together.
+  const calculatedViewHeight = timeSlots.reduce((total, slot) => total + slot.screenHeight, 0);
+  const calculatedPrintViewHeight = timeSlots.reduce((total, slot) => total + slot.printHeight, 0);
   const dayEntries = visibleDays.map((day, index) => ({
     day,
     dayIndex: index,
@@ -266,7 +274,7 @@ export default function ScheduleCalendar({
         {dayEntries.map(({ day, segments }) => <div className="calendar-day-head" key={day.id}><strong>{day.name}</strong><small>{segments.length} bloques</small></div>)}
         <div className="calendar-time-axis">{timeSlots.map(({ minute, screenCenter }) => <span key={minute} style={{ top: screenCenter }}>{formatClock(minute)}</span>)}</div>
         {dayEntries.map(({ day, segments }) => <div className="calendar-day-lane" key={day.id} style={{ height: viewHeight }}>
-          {timeBoundaries.map((minute) => <i className="calendar-hour-line" key={minute} style={{ top: (minute - viewStart) / 60 * HOUR_HEIGHT }} />)}
+          {timeSlots.map(({ minute, screenTop, screenHeight }, slotIndex) => <div className={slotIndex % 2 === 0 ? "calendar-hour-cell" : "calendar-hour-cell alternate"} key={minute} aria-hidden="true" style={{ top: screenTop, height: screenHeight }} />)}
           {segments.map((segment, segmentIndex) => {
             const color = segment.event.courseCode ? { bg: "#dceeff", border: "#86bce4", text: "#174f78" } : (COLORS.find((item) => item.id === segment.event.color) || COLORS[0]);
             const top = (segment.start - viewStart) / 60 * HOUR_HEIGHT;
@@ -292,7 +300,7 @@ export default function ScheduleCalendar({
           </div>
           {dayEntries.map(({ day, segments }) => (
             <section className="schedule-print-day" key={day.id} style={{ height: printViewHeight }}>
-              {timeBoundaries.map((minute) => <i className="schedule-print-hour-line" key={minute} style={{ top: (minute - viewStart) / 60 * PRINT_HOUR_HEIGHT }} />)}
+              {timeSlots.map(({ minute, printTop, printHeight }, slotIndex) => <div className={slotIndex % 2 === 0 ? "schedule-print-hour-cell" : "schedule-print-hour-cell alternate"} key={minute} aria-hidden="true" style={{ top: printTop, height: printHeight }} />)}
               {segments.map((segment, segmentIndex) => {
                 const color = segment.event.courseCode ? { bg: "#dceeff", text: "#174f78" } : (COLORS.find((item) => item.id === segment.event.color) || COLORS[0]);
                 const top = (segment.start - viewStart) / 60 * PRINT_HOUR_HEIGHT;
