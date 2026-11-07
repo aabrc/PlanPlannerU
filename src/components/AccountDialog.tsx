@@ -192,7 +192,7 @@ export default function AccountDialog({
                         Conservar este dispositivo
                       </button>
                     </div>
-                    <small>La opción local reemplaza la copia de la nube solo si su revisión no ha cambiado desde esta comprobación. La opción de nube genera primero un respaldo JSON cuando este dispositivo ya tiene progreso.</small>
+                    <small>La opción local reemplaza la copia de la nube solo si su revisión no ha cambiado desde esta comprobación y descarga antes un respaldo de la versión remota. La opción de nube genera primero un respaldo JSON cuando este dispositivo ya tiene progreso.</small>
                   </div>
                 )}
               </section>
