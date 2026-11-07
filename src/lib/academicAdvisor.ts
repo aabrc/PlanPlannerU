@@ -70,19 +70,27 @@ function periodLabelForCourse(plan: CurriculumPlan, code: string): string {
   return periodForCourse(plan, code)?.label || "Electiva seleccionada";
 }
 
-function compareCoursePeriods(
-  plan: CurriculumPlan,
-  codeA: string,
-  codeB: string
+function comparePeriodPositions(
+  periodA: CurriculumPlan["periods"][number] | undefined,
+  periodB: CurriculumPlan["periods"][number] | undefined
 ): number {
-  const periodA = periodForCourse(plan, codeA);
-  const periodB = periodForCourse(plan, codeB);
   const yearA = periodA?.year ?? Number.MAX_SAFE_INTEGER;
   const yearB = periodB?.year ?? Number.MAX_SAFE_INTEGER;
   const termA = periodA?.term ?? Number.MAX_SAFE_INTEGER;
   const termB = periodB?.term ?? Number.MAX_SAFE_INTEGER;
 
   return yearA - yearB || termA - termB;
+}
+
+function compareCoursePeriods(
+  plan: CurriculumPlan,
+  codeA: string,
+  codeB: string
+): number {
+  return comparePeriodPositions(
+    periodForCourse(plan, codeA),
+    periodForCourse(plan, codeB)
+  );
 }
 
 function approvedCredits(plan: CurriculumPlan, state: PlannerState): number {
@@ -269,9 +277,12 @@ export function buildAcademicAdvice(
   }
 
   const approved = approvedCredits(plan, state);
-  const currentPeriodIndex = plan.periods.findIndex(
+  const currentPeriod = plan.periods.find(
     (period) => period.id === state.meta.currentPeriod
   );
+  const currentPeriodIndex = currentPeriod
+    ? plan.periods.findIndex((period) => period.id === currentPeriod.id)
+    : -1;
   const targetValue = Number(state.meta.loadPerTerm);
   const targetCredits = Number.isFinite(targetValue) && targetValue > 0
     ? clamp(targetValue, 1, 30)
@@ -301,12 +312,11 @@ export function buildAcademicAdvice(
       // A selected elective belongs to the period that contains its group,
       // even though it is stored in group.options rather than period.courses.
       const coursePeriod = periodForCourse(plan, course.code);
-      const coursePeriodIndex = coursePeriod
-        ? plan.periods.findIndex((period) => period.id === coursePeriod.id)
-        : -1;
-      const isLagged = currentPeriodIndex >= 0 &&
-        coursePeriodIndex >= 0 &&
-        coursePeriodIndex < currentPeriodIndex;
+      const isLagged = Boolean(
+        currentPeriod &&
+        coursePeriod &&
+        comparePeriodPositions(coursePeriod, currentPeriod) < 0
+      );
       const blockers = blockersFor(course, state, allCourses, approved, plan.totalCredits);
       const directUnlocks = (dependents.get(course.code) || new Set<string>()).size;
       const unlocks = countDownstream(course.code, dependents);
