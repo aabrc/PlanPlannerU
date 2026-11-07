@@ -55,6 +55,15 @@ export default function AccountDialog({
     }
   }, [session, open]);
 
+  useEffect(() => {
+    if (!open) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [open, onClose]);
+
   if (!open) return null;
 
   const sendMagicLink = async () => {
@@ -119,7 +128,7 @@ export default function AccountDialog({
   };
 
   return (
-    <div className="account-backdrop" role="presentation" onMouseDown={(event) => {
+    <div className="account-backdrop" role="presentation" onClick={(event) => {
       if (event.target === event.currentTarget) onClose();
     }}>
       <section className="account-dialog" role="dialog" aria-modal="true" aria-labelledby="account-title">
