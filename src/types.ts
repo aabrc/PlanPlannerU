@@ -15,6 +15,18 @@ export interface AdvisorCourseProfile {
   experience?: AdvisorCourseExperience;
   challengeFactors?: AdvisorChallengeFactor[];
 }
+
+/**
+ * Aggregated, non-identifying student feedback for one course in one curriculum.
+ * Raw student profiles must never be stored in this shared insight.
+ */
+export interface AdvisorCommunityInsight {
+  curriculumId: string;
+  courseCode: string;
+  responseCount: number;
+  meanDifficulty: number;
+  updatedAt?: string;
+}
 export interface Course {
   id?: string;
   code: string;
@@ -51,6 +63,7 @@ export interface Period {
   baseCredits: number;
 }
 export interface CurriculumPlan {
+  id?: string;
   periods: Period[];
   groups: ElectiveGroup[];
   totalCredits: number;
