@@ -207,4 +207,16 @@ describe("normalizePlannerState: compatibilidad y conservación", () => {
     expect(normalized._syncUpdatedAt).toBe(1234);
   });
 
+  it("preserves only valid positive safe-integer cloud revisions", () => {
+    const valid = normalizePlannerState({ _syncRevision: 7 }, []);
+    const fractional = normalizePlannerState({ _syncRevision: 1.5 }, []);
+    const zero = normalizePlannerState({ _syncRevision: 0 }, []);
+    const unsafe = normalizePlannerState({ _syncRevision: Number.MAX_SAFE_INTEGER + 1 }, []);
+
+    expect(valid._syncRevision).toBe(7);
+    expect(fractional._syncRevision).toBeUndefined();
+    expect(zero._syncRevision).toBeUndefined();
+    expect(unsafe._syncRevision).toBeUndefined();
+  });
+
 });
