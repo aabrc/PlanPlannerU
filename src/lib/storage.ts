@@ -1,4 +1,12 @@
-import type { CourseDifficultyOverride, CourseStatus, PlannerState } from "../types";
+import type {
+  AdvisorChallengeFactor,
+  AdvisorCourseExperience,
+  AdvisorCourseProfile,
+  AdvisorReadiness,
+  CourseDifficultyOverride,
+  CourseStatus,
+  PlannerState
+} from "../types";
 
 export const STORAGE_KEY = "itt2020_pensum_tracker_v2";
 
@@ -52,7 +60,7 @@ function blankState(externalCodes: string[]): PlannerState {
     scheduleEvents: [],
     scheduleView: { start: 360, end: 1200, lastVisibleDay: 6 },
     gradeAttempts: [],
-    courseDifficultyOverrides: {},
+    advisorCourseProfiles: {},
     meta: { currentPeriod: "", loadPerTerm: "15", gpa: "", internship: 0 }
   };
 }
@@ -65,11 +73,56 @@ export function normalizePlannerState(
   const externalDone = { ...base.externalDone, ...(saved?.externalDone || {}) };
 
   const validDifficultyOverrides: CourseDifficultyOverride[] = ["light", "moderate", "demanding"];
-  const courseDifficultyOverrides = Object.fromEntries(
-    Object.entries(saved?.courseDifficultyOverrides || {}).filter(
-      ([, value]) => validDifficultyOverrides.includes(value as CourseDifficultyOverride)
-    )
-  ) as Record<string, CourseDifficultyOverride>;
+  const validReadiness: AdvisorReadiness[] = ["prepared", "some-gaps", "needs-review"];
+  const validExperiences: AdvisorCourseExperience[] = [
+    "not-started",
+    "manageable",
+    "as-expected",
+    "challenging"
+  ];
+  const validChallengeFactors: AdvisorChallengeFactor[] = [
+    "foundations",
+    "teaching-method",
+    "assessments",
+    "practical-skills",
+    "time-constraints"
+  ];
+  const advisorCourseProfiles: Record<string, AdvisorCourseProfile> = {};
+
+  for (const [code, rawProfile] of Object.entries(saved?.advisorCourseProfiles || {})) {
+    if (!rawProfile || typeof rawProfile !== "object") continue;
+    const profile = rawProfile as AdvisorCourseProfile;
+    const normalized: AdvisorCourseProfile = {};
+
+    if (validDifficultyOverrides.includes(profile.difficultyOverride as CourseDifficultyOverride)) {
+      normalized.difficultyOverride = profile.difficultyOverride;
+    }
+    if (validReadiness.includes(profile.readiness as AdvisorReadiness)) {
+      normalized.readiness = profile.readiness;
+    }
+    if (validExperiences.includes(profile.experience as AdvisorCourseExperience)) {
+      normalized.experience = profile.experience;
+    }
+    if (Array.isArray(profile.challengeFactors)) {
+      normalized.challengeFactors = Array.from(new Set(
+        profile.challengeFactors.filter((factor): factor is AdvisorChallengeFactor =>
+          validChallengeFactors.includes(factor)
+        )
+      ));
+      if (normalized.challengeFactors.length === 0) delete normalized.challengeFactors;
+    }
+
+    if (Object.keys(normalized).length > 0) advisorCourseProfiles[code] = normalized;
+  }
+
+  // Migrate previously saved personal difficulty adjustments without losing them.
+  for (const [code, value] of Object.entries(saved?.courseDifficultyOverrides || {})) {
+    if (!validDifficultyOverrides.includes(value as CourseDifficultyOverride)) continue;
+    const current = advisorCourseProfiles[code] || {};
+    if (!current.difficultyOverride) {
+      advisorCourseProfiles[code] = { ...current, difficultyOverride: value as CourseDifficultyOverride };
+    }
+  }
 
   // These two requirements are recorded as fulfilled through the admission exam.
   for (const code of AUTO_COMPLETED_EXTERNAL) externalDone[code] = true;
@@ -83,7 +136,8 @@ export function normalizePlannerState(
     scheduleEvents: Array.isArray(saved?.scheduleEvents) ? saved.scheduleEvents : [],
     scheduleView: normalizeScheduleView(saved?.scheduleView),
     gradeAttempts: Array.isArray(saved?.gradeAttempts) ? saved.gradeAttempts : [],
-    courseDifficultyOverrides,
+    advisorCourseProfiles,
+    courseDifficultyOverrides: undefined,
     meta: { ...base.meta, ...(saved?.meta || {}) }
   };
 }
