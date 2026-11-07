@@ -431,14 +431,17 @@ export function savePlannerState(state: PlannerState): boolean {
   }
 }
 
-export function downloadBackup(state: PlannerState): void {
+export function downloadBackup(
+  state: PlannerState,
+  filename = "PlanPlannerU-respaldo.json"
+): void {
   const blob = new Blob([JSON.stringify(state, null, 2)], {
     type: "application/json"
   });
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
   anchor.href = url;
-  anchor.download = "PlanPlannerU-respaldo.json";
+  anchor.download = filename;
   anchor.click();
   URL.revokeObjectURL(url);
 }
