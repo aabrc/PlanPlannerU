@@ -11,6 +11,11 @@ import { buildAcademicAdvice } from "./lib/academicAdvisor";
 import { buildHomeScheduleSummary } from "./lib/scheduleSummary";
 import { isSupabaseConfigured, supabase } from "./lib/supabase";
 import {
+  overwriteCloudWithLocal,
+  syncPlannerState
+} from "./lib/cloudSync";
+import type { PlannerSyncResult } from "./lib/cloudSync";
+import {
   downloadBackup,
   loadPlannerState,
   readBackup,
@@ -52,6 +57,7 @@ function getInitialPage(): Page {
 }
 
 type Filter = "all" | "pending" | "inprogress" | "approved" | "blocked";
+type SyncConflict = Extract<PlannerSyncResult, { status: "conflict" }>;
 
 function courseList(): Course[] {
   const all = [...PLAN.periods.flatMap((period) => period.courses), ...PLAN.groups.flatMap((group) => group.options)];
@@ -166,6 +172,9 @@ function App() {
   const [toast, setToast] = useState("");
   const [session, setSession] = useState<Session | null>(null);
   const [showAccount, setShowAccount] = useState(false);
+  const [syncBusy, setSyncBusy] = useState(false);
+  const [syncMessage, setSyncMessage] = useState("");
+  const [syncConflict, setSyncConflict] = useState<SyncConflict | null>(null);
   const importRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -184,6 +193,115 @@ function App() {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    setSyncConflict(null);
+    setSyncMessage("");
+  }, [session?.user.id]);
+
+  const syncNow = async () => {
+    if (!supabase || !session) {
+      setSyncMessage("Inicia sesión para sincronizar tu progreso.");
+      return;
+    }
+
+    setSyncBusy(true);
+    setSyncConflict(null);
+    setSyncMessage("Comprobando la versión guardada en la nube…");
+
+    try {
+      const result = await syncPlannerState(
+        supabase,
+        session.user.id,
+        planner,
+        EXTERNAL_CODES
+      );
+
+      if (result.status === "idle") {
+        setSyncMessage("Todavía no hay progreso académico que sincronizar.");
+      } else if (result.status === "uploaded") {
+        setPlanner(result.state);
+        setSyncMessage("Tu progreso local se guardó en la nube. Revisión " + result.revision + ".");
+      } else if (result.status === "downloaded") {
+        downloadBackup(planner);
+        setPlanner(result.state);
+        setSyncMessage("Se descargó la versión de la nube. Antes se generó un respaldo local.");
+      } else if (result.status === "synced") {
+        setPlanner(result.state);
+        setSyncMessage("Este dispositivo y la nube ya tienen la misma versión (revisión " + result.revision + ").");
+      } else {
+        setSyncConflict(result);
+        setSyncMessage("Hay dos versiones con cambios. Elige cuál conservar; no se sobrescribió ningún dato.");
+      }
+    } catch (error) {
+      setSyncMessage(error instanceof Error
+        ? "No se pudo sincronizar: " + error.message
+        : "No se pudo sincronizar. Comprueba tu conexión e inténtalo de nuevo.");
+    } finally {
+      setSyncBusy(false);
+    }
+  };
+
+  const useCloudVersion = () => {
+    if (!syncConflict) return;
+
+    const accepted = window.confirm(
+      "La versión guardada en la nube reemplazará el progreso de este dispositivo. " +
+      "Antes se descargará un respaldo JSON de tu versión local. ¿Continuar?"
+    );
+    if (!accepted) return;
+
+    try {
+      downloadBackup(planner);
+      setPlanner(syncConflict.remoteState);
+      setSyncConflict(null);
+      setSyncMessage("Se conservó la versión de la nube. Tu versión anterior quedó guardada en un respaldo JSON.");
+    } catch (error) {
+      setSyncMessage(error instanceof Error
+        ? "No se pudo preparar el respaldo local: " + error.message
+        : "No se pudo preparar el respaldo local. No se reemplazó tu progreso.");
+    }
+  };
+
+  const keepLocalVersion = async () => {
+    if (!supabase || !session || !syncConflict) return;
+
+    const accepted = window.confirm(
+      "Tu versión local reemplazará la versión guardada en la nube para esta cuenta. " +
+      "Los demás dispositivos tendrán que volver a sincronizar. ¿Continuar?"
+    );
+    if (!accepted) return;
+
+    setSyncBusy(true);
+    setSyncMessage("Comprobando que la versión de la nube no haya cambiado…");
+
+    try {
+      const result = await overwriteCloudWithLocal(
+        supabase,
+        session.user.id,
+        planner,
+        syncConflict.remoteRevision,
+        EXTERNAL_CODES
+      );
+
+      if (result.status === "uploaded") {
+        setPlanner(result.state);
+        setSyncConflict(null);
+        setSyncMessage("Se conservó este dispositivo y se actualizó la nube a la revisión " + result.revision + ".");
+      } else if (result.status === "conflict") {
+        setSyncConflict(result);
+        setSyncMessage("La nube cambió durante la operación. No se sobrescribió; revisa de nuevo las dos versiones.");
+      } else {
+        setSyncMessage("No había datos que guardar en la nube.");
+      }
+    } catch (error) {
+      setSyncMessage(error instanceof Error
+        ? "No se pudo conservar la versión local en la nube: " + error.message
+        : "No se pudo actualizar la nube. Tu progreso local permanece intacto.");
+    } finally {
+      setSyncBusy(false);
+    }
+  };
 
   useEffect(() => {
     try {
@@ -846,6 +964,12 @@ function App() {
         configured={isSupabaseConfigured}
         session={session}
         supabaseClient={supabase}
+        syncBusy={syncBusy}
+        syncMessage={syncMessage}
+        syncConflict={syncConflict}
+        onSyncNow={syncNow}
+        onUseCloud={useCloudVersion}
+        onKeepLocal={() => void keepLocalVersion()}
         onClose={() => setShowAccount(false)}
       />
       {toast && <div className="toast" role="status">{toast}</div>}
