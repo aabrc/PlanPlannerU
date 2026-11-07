@@ -88,4 +88,123 @@ describe("normalizePlannerState: compatibilidad y conservación", () => {
     expect(normalized.scheduleEvents).toEqual([]);
     expect(normalized.gradeAttempts).toEqual([]);
   });
+  it("descarta estructuras inválidas sin alterar los datos válidos", () => {
+    const normalized = normalizePlannerState({
+      courseStates: {
+        ICC103: "approved",
+        ICC104: "invented",
+        ICC105: 1
+      },
+      selections: {
+        "ITT-E01-T": "ITT403",
+        "ITT-E02-T": 42,
+        "": "ICC104"
+      },
+      externalDone: {
+        MAT311: false,
+        ILE203: "false",
+        ILE311: true,
+        UNKNOWN: true
+      },
+      scheduleEvents: [
+        {
+          id: "event-1",
+          title: "Clase válida",
+          courseCode: "ICC103",
+          days: ["mon", "wed", "invalid", "mon"],
+          start: "08:00",
+          end: "10:00",
+          color: "blue"
+        },
+        { id: "event-2", title: "Hora dañada", days: ["noday"], start: "99:99", end: "10:90" },
+        null,
+        { id: "event-3", title: "" }
+      ],
+      gradeAttempts: [
+        { id: "valid", courseCode: "ICC103", periodId: "y1p2", grade: 90, createdAt: 100 },
+        { id: "bad-grade", courseCode: "ICC104", periodId: "y1p2", grade: 150, createdAt: 101 },
+        { id: "bad-time", courseCode: "ICC105", periodId: "y1p2", grade: 80, createdAt: "yesterday" }
+      ],
+      meta: {
+        currentPeriod: 12,
+        loadPerTerm: "99",
+        gpa: "5.8",
+        internship: -20
+      }
+    } as unknown as Partial<PlannerState>, ["MAT311", "ILE203", "ILE311"]);
+
+    expect(normalized.courseStates).toEqual({ ICC103: "approved" });
+    expect(normalized.selections).toEqual({ "ITT-E01-T": "ITT403" });
+    expect(normalized.externalDone).toEqual({ MAT311: true, ILE203: true, ILE311: true });
+    expect(normalized.scheduleEvents).toEqual([{
+      id: "event-1",
+      title: "Clase válida",
+      courseCode: "ICC103",
+      days: ["mon", "wed"],
+      start: "08:00",
+      end: "10:00",
+      color: "blue"
+    }, {
+      id: "event-2",
+      title: "Hora dañada",
+      days: []
+    }]);
+    expect(normalized.gradeAttempts).toEqual([{
+      id: "valid",
+      courseCode: "ICC103",
+      periodId: "y1p2",
+      grade: 90,
+      createdAt: 100
+    }]);
+    expect(normalized.meta).toMatchObject({
+      currentPeriod: "",
+      loadPerTerm: "30",
+      gpa: "4",
+      internship: 0
+    });
+  });
+
+  it("normaliza horas, notas, créditos y tiempos de forma segura", () => {
+    const normalized = normalizePlannerState({
+      scheduleEvents: [{
+        id: "class-1",
+        title: "Clase de medianoche",
+        days: ["sun"],
+        start: "22:30",
+        end: "24:00",
+        notes: "  Repasar  ",
+        location: "  Laboratorio  ",
+        color: "not-a-color"
+      }],
+      gradeAttempts: [
+        { id: "older", courseCode: "MAT101", periodId: "y1p1", grade: 70, createdAt: 10 },
+        { id: "newer", courseCode: "MAT101", periodId: "y1p1", grade: 95, createdAt: 20 }
+      ],
+      meta: { currentPeriod: " y1p2 ", loadPerTerm: "0", gpa: "-2", internship: "500" },
+      _syncUpdatedAt: 1234
+    } as unknown as Partial<PlannerState>, []);
+
+    expect(normalized.scheduleEvents[0]).toMatchObject({
+      start: "22:30",
+      end: "24:00",
+      notes: "Repasar",
+      location: "Laboratorio"
+    });
+    expect(normalized.scheduleEvents[0].color).toBeUndefined();
+    expect(normalized.gradeAttempts).toEqual([{
+      id: "newer",
+      courseCode: "MAT101",
+      periodId: "y1p1",
+      grade: 95,
+      createdAt: 20
+    }]);
+    expect(normalized.meta).toMatchObject({
+      currentPeriod: "y1p2",
+      loadPerTerm: "1",
+      gpa: "0",
+      internship: 320
+    });
+    expect(normalized._syncUpdatedAt).toBe(1234);
+  });
+
 });
