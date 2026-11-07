@@ -57,14 +57,32 @@ function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
 }
 
-function periodLabelForCourse(plan: CurriculumPlan, code: string): string {
-  const period = plan.periods.find((item) =>
+function periodForCourse(plan: CurriculumPlan, code: string) {
+  return plan.periods.find((item) =>
     item.courses.some((course) => course.code === code) ||
     item.groups.some((groupId) =>
       plan.groups.find((group) => group.id === groupId)?.options.some((course) => course.code === code)
     )
   );
-  return period?.label || "Electiva seleccionada";
+}
+
+function periodLabelForCourse(plan: CurriculumPlan, code: string): string {
+  return periodForCourse(plan, code)?.label || "Electiva seleccionada";
+}
+
+function compareCoursePeriods(
+  plan: CurriculumPlan,
+  codeA: string,
+  codeB: string
+): number {
+  const periodA = periodForCourse(plan, codeA);
+  const periodB = periodForCourse(plan, codeB);
+  const yearA = periodA?.year ?? Number.MAX_SAFE_INTEGER;
+  const yearB = periodB?.year ?? Number.MAX_SAFE_INTEGER;
+  const termA = periodA?.term ?? Number.MAX_SAFE_INTEGER;
+  const termB = periodB?.term ?? Number.MAX_SAFE_INTEGER;
+
+  return yearA - yearB || termA - termB;
 }
 
 function approvedCredits(plan: CurriculumPlan, state: PlannerState): number {
@@ -374,6 +392,9 @@ export function buildAcademicAdvice(
     .filter(({ recommendation }) => recommendation.canEnroll)
     .map(({ recommendation }) => recommendation)
     .sort((a, b) =>
+      // Academic position is the primary criterion: earliest year and term first.
+      // Priority score only decides the order among courses in the same period.
+      compareCoursePeriods(plan, a.course.code, b.course.code) ||
       b.priorityScore - a.priorityScore ||
       a.difficulty.score - b.difficulty.score ||
       a.course.code.localeCompare(b.course.code)
@@ -390,15 +411,13 @@ export function buildAcademicAdvice(
       isLagged && !recommendedCodes.has(recommendation.course.code)
     )
     .sort((a, b) => {
-      const periodA = plan.periods.findIndex((period) =>
-        period.courses.some((course) => course.code === a.recommendation.course.code)
+      // Among lagged subjects, show the period closest to the current one first.
+      const periodOrder = compareCoursePeriods(
+        plan,
+        b.recommendation.course.code,
+        a.recommendation.course.code
       );
-      const periodB = plan.periods.findIndex((period) =>
-        period.courses.some((course) => course.code === b.recommendation.course.code)
-      );
-
-      // Proximity to the student's current academic period comes first.
-      if (periodA !== periodB) return periodB - periodA;
+      if (periodOrder !== 0) return periodOrder;
 
       // Within the same period, prioritize actionable courses that unlock others.
       return (
