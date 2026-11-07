@@ -115,5 +115,6 @@ export interface PlannerState {
     [key: string]: unknown;
   };
   _syncUpdatedAt?: number;
+  _syncRevision?: number;
   [key: string]: unknown;
 }
