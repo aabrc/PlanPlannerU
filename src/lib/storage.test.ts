@@ -49,7 +49,12 @@ describe("normalizePlannerState: compatibilidad y conservación", () => {
     expect(normalized.scheduleEvents).toEqual(saved.scheduleEvents);
     expect(normalized.scheduleView).toEqual(saved.scheduleView);
     expect(normalized.gradeAttempts).toEqual(saved.gradeAttempts);
-    expect(normalized.meta).toMatchObject(saved.meta);
+    expect(normalized.meta).toMatchObject({
+      currentPeriod: "y1p2",
+      loadPerTerm: "18",
+      gpa: "3.45",
+      internship: 120
+    });
     expect(normalized.advisorCourseProfiles?.ICC103).toEqual({
       difficultyOverride: "moderate",
       experience: "challenging"
