@@ -277,6 +277,10 @@ function App() {
     setSyncMessage("Comprobando que la versión de la nube no haya cambiado…");
 
     try {
+      if (hasPlannerData(syncConflict.remoteState)) {
+        downloadBackup(syncConflict.remoteState);
+      }
+
       const result = await overwriteCloudWithLocal(
         supabase,
         session.user.id,
@@ -288,10 +292,11 @@ function App() {
       if (result.status === "uploaded") {
         setPlanner(result.state);
         setSyncConflict(null);
-        setSyncMessage("Se conservó este dispositivo y se actualizó la nube a la revisión " + result.revision + ".");
+        setSyncMessage("Se conservó este dispositivo. La versión anterior de la nube se descargó como respaldo y la cuenta quedó en la revisión " + result.revision + ".");
       } else if (result.status === "conflict") {
+        if (hasPlannerData(result.remoteState)) downloadBackup(result.remoteState);
         setSyncConflict(result);
-        setSyncMessage("La nube cambió durante la operación. No se sobrescribió; revisa de nuevo las dos versiones.");
+        setSyncMessage("La nube cambió durante la operación. No se sobrescribió; se descargó un respaldo de la nueva versión. Revisa de nuevo las dos versiones.");
       } else {
         setSyncMessage("No había datos que guardar en la nube.");
       }
