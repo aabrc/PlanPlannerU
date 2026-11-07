@@ -23,11 +23,11 @@ function period(
   };
 }
 
-function planWith(periods: Period[]): CurriculumPlan {
+function planWith(periods: Period[], groups: CurriculumPlan["groups"] = []): CurriculumPlan {
   return {
     id: "TEST-CURRICULUM",
     periods,
-    groups: [],
+    groups,
     totalCredits: 60,
     externalRequirements: [],
     fixedCredits: 60,
@@ -97,5 +97,85 @@ describe("buildAcademicAdvice: orden académico", () => {
 
     expect(advice.recommendations.slice(0, 2).map((item) => item.course.code))
       .toEqual(["COURSE_WITH_UNLOCK", "COURSE_WITHOUT_UNLOCK"]);
+  });
+});
+
+
+describe("buildAcademicAdvice: electivas, laboratorios y estados", () => {
+  it("ordena una electiva seleccionada según el año y período de su grupo", () => {
+    const elective = course("ELEC_EARLY");
+    const later = course("CORE_LATER");
+    const curriculum = planWith([
+      { ...period("y1p2", 1, 2, []), groups: ["ELECTIVE-GROUP"] },
+      period("y1p3", 1, 3, [later]),
+      period("y2p1", 2, 1, [])
+    ], [{
+      id: "ELECTIVE-GROUP",
+      name: "Electiva de prueba",
+      minCourses: 1,
+      minCredits: 3,
+      options: [elective]
+    }]);
+
+    const state = stateAt("y2p1");
+    state.selections["ELECTIVE-GROUP"] = elective.code;
+    const advice = buildAcademicAdvice(curriculum, state);
+
+    expect(advice.recommendations.slice(0, 2).map((item) => item.course.code))
+      .toEqual(["ELEC_EARLY", "CORE_LATER"]);
+  });
+
+  it("mantiene un laboratorio bloqueado en rezagadas y muestra sus prerrequisitos pendientes", () => {
+    const curriculum = planWith([
+      period("y1p1", 1, 1, [course("ICC101")]),
+      period("y1p2", 1, 2, [course("ICC103", ["ICC101"])]),
+      period("y1p3", 1, 3, [course("LAB_NETWORKS", ["ICC103"])]),
+      period("y2p1", 2, 1, [])
+    ]);
+
+    const advice = buildAcademicAdvice(curriculum, stateAt("y2p1"));
+    const lab = advice.laggedCourses.find((item) => item.course.code === "LAB_NETWORKS");
+
+    expect(lab).toBeDefined();
+    expect(lab?.canEnroll).toBe(false);
+    expect(lab?.blockers).toContain("ICC103");
+    expect(advice.recommendations.some((item) => item.course.code === "LAB_NETWORKS"))
+      .toBe(false);
+  });
+
+  it("no recomienda asignaturas aprobadas ni las cuenta como rezagadas", () => {
+    const curriculum = planWith([
+      period("y1p1", 1, 1, [course("APPROVED_COURSE")]),
+      period("y1p2", 1, 2, [course("NEXT_COURSE", ["APPROVED_COURSE"])]),
+      period("y2p1", 2, 1, [])
+    ]);
+
+    const advice = buildAcademicAdvice(
+      curriculum,
+      stateAt("y2p1", ["APPROVED_COURSE"])
+    );
+
+    expect(advice.recommendations.map((item) => item.course.code))
+      .toContain("NEXT_COURSE");
+    expect(advice.recommendations.some((item) => item.course.code === "APPROVED_COURSE"))
+      .toBe(false);
+    expect(advice.laggedCourses.some((item) => item.course.code === "APPROVED_COURSE"))
+      .toBe(false);
+  });
+
+  it("respeta los requisitos externos que aún no se han completado", () => {
+    const required = course("COURSE_WITH_EXTERNAL_REQ", ["ILE311"]);
+    const curriculum = planWith([
+      period("y1p1", 1, 1, [required]),
+      period("y2p1", 2, 1, [])
+    ]);
+
+    const advice = buildAcademicAdvice(curriculum, stateAt("y2p1"));
+    const blocked = advice.laggedCourses.find(
+      (item) => item.course.code === "COURSE_WITH_EXTERNAL_REQ"
+    );
+
+    expect(blocked?.canEnroll).toBe(false);
+    expect(blocked?.blockers).toContain("ILE311");
   });
 });
