@@ -1,24 +1,48 @@
-import type { CourseDifficultyOverride } from "../types";
+import type {
+  AdvisorChallengeFactor,
+  AdvisorCourseProfile,
+  AdvisorReadiness,
+  AdvisorCourseExperience,
+  CourseDifficultyOverride
+} from "../types";
 import type { AcademicAdvice, AdvisorRecommendation } from "../lib/academicAdvisor";
 
 interface AcademicAdvisorProps extends AcademicAdvice {
   onOpenCourse: (courseCode: string) => void;
   onConfigurePeriod: () => void;
-  onDifficultyChange: (courseCode: string, value: CourseDifficultyOverride | null) => void;
+  onProfileChange: (courseCode: string, patch: Partial<AdvisorCourseProfile>) => void;
 }
+
+const CHALLENGE_FACTORS: { value: AdvisorChallengeFactor; label: string }[] = [
+  { value: "foundations", label: "Fundamentos previos" },
+  { value: "teaching-method", label: "Metodología de enseñanza" },
+  { value: "assessments", label: "Evaluaciones" },
+  { value: "practical-skills", label: "Práctica y desarrollo de habilidades" },
+  { value: "time-constraints", label: "Tiempo y otras responsabilidades" }
+];
 
 function RecommendationCard({
   item,
   index,
   onOpenCourse,
-  onDifficultyChange
+  onProfileChange
 }: {
   item: AdvisorRecommendation;
   index: number;
   onOpenCourse: (courseCode: string) => void;
-  onDifficultyChange: (courseCode: string, value: CourseDifficultyOverride | null) => void;
+  onProfileChange: (courseCode: string, patch: Partial<AdvisorCourseProfile>) => void;
 }) {
-  const { course, difficulty } = item;
+  const { course, difficulty, profile } = item;
+
+  const updateChallengeFactor = (factor: AdvisorChallengeFactor, checked: boolean) => {
+    const current = profile.challengeFactors || [];
+    const next = checked
+      ? Array.from(new Set([...current, factor]))
+      : current.filter((item) => item !== factor);
+    onProfileChange(course.code, {
+      challengeFactors: next.length ? next : undefined
+    });
+  };
 
   return (
     <article className="advisor-course">
@@ -44,24 +68,78 @@ function RecommendationCard({
             {difficulty.source === "ajustada por ti" ? "Ajustada según tu experiencia" : "Estimación inicial"}
           </small>
           <label className="advisor-difficulty-control">
-            <span>Dificultad estimada</span>
+            <span>Dificultad para mí</span>
             <select
-              value={difficulty.override || ""}
-              onChange={(event) => onDifficultyChange(
+              value={profile.difficultyOverride || ""}
+              onChange={(event) => onProfileChange(
                 course.code,
-                event.target.value
-                  ? event.target.value as CourseDifficultyOverride
-                  : null
+                {
+                  difficultyOverride: event.target.value
+                    ? event.target.value as CourseDifficultyOverride
+                    : undefined
+                }
               )}
               aria-label={"Ajustar dificultad de " + course.code}
             >
               <option value="">Automática</option>
-              <option value="light">Fácil para mí</option>
-              <option value="moderate">Moderada para mí</option>
-              <option value="demanding">Difícil para mí</option>
+              <option value="light">Me resulta fácil</option>
+              <option value="moderate">Me resulta moderada</option>
+              <option value="demanding">Me resulta difícil</option>
             </select>
           </label>
         </div>
+
+        <details className="advisor-profile-details">
+          <summary>Mi preparación y experiencia con esta materia</summary>
+          <div className="advisor-profile-fields">
+            <label>
+              <span>¿Cómo te sientes respecto a sus fundamentos?</span>
+              <select
+                value={profile.readiness || ""}
+                onChange={(event) => onProfileChange(course.code, {
+                  readiness: (event.target.value || undefined) as AdvisorReadiness | undefined
+                })}
+              >
+                <option value="">Todavía no lo he indicado</option>
+                <option value="prepared">Me siento preparado</option>
+                <option value="some-gaps">Tengo algunas lagunas</option>
+                <option value="needs-review">Necesito reforzar conocimientos</option>
+              </select>
+            </label>
+            <label>
+              <span>¿Cómo te ha resultado la asignatura?</span>
+              <select
+                value={profile.experience || ""}
+                onChange={(event) => onProfileChange(course.code, {
+                  experience: (event.target.value || undefined) as AdvisorCourseExperience | undefined
+                })}
+              >
+                <option value="">Aún no tengo una experiencia que registrar</option>
+                <option value="not-started">Todavía no la he cursado</option>
+                <option value="manageable">Me ha resultado manejable</option>
+                <option value="as-expected">Ha sido como esperaba</option>
+                <option value="challenging">Me ha resultado más exigente</option>
+              </select>
+            </label>
+            <fieldset className="advisor-challenge-factors">
+              <legend>¿Qué factores te han presentado dificultades? (opcional)</legend>
+              {CHALLENGE_FACTORS.map((factor) => (
+                <label key={factor.value}>
+                  <input
+                    type="checkbox"
+                    checked={(profile.challengeFactors || []).includes(factor.value)}
+                    onChange={(event) => updateChallengeFactor(factor.value, event.target.checked)}
+                  />
+                  <span>{factor.label}</span>
+                </label>
+              ))}
+            </fieldset>
+            <small className="advisor-profile-privacy">
+              Estas respuestas describen tu experiencia personal; no modifican el pensum ni se atribuyen a un profesor.
+            </small>
+          </div>
+        </details>
+
         <ul className="advisor-reasons">
           {item.reasons.map((reason) => <li key={reason}>{reason}</li>)}
         </ul>
@@ -83,7 +161,7 @@ function AcademicAdvisor({
   paceLabel,
   onOpenCourse,
   onConfigurePeriod,
-  onDifficultyChange
+  onProfileChange
 }: AcademicAdvisorProps) {
   return (
     <section className="advisor-panel paper-card" aria-labelledby="advisor-title">
@@ -120,7 +198,7 @@ function AcademicAdvisor({
                   item={item}
                   index={index}
                   onOpenCourse={onOpenCourse}
-                  onDifficultyChange={onDifficultyChange}
+                  onProfileChange={onProfileChange}
                 />
               ))}
             </div>
@@ -155,7 +233,7 @@ function AcademicAdvisor({
                   item={item}
                   index={index}
                   onOpenCourse={onOpenCourse}
-                  onDifficultyChange={onDifficultyChange}
+                  onProfileChange={onProfileChange}
                 />
               ))}
             </div>
