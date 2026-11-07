@@ -122,6 +122,8 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .external-row.is-done { background: #f0f6ed; border-color: #c9dcc7; }
 .notice-panel { padding: 12px; background: #f8f3e7; border: 1px solid #e9ddc5; border-radius: 10px; color: #8c7854; font-size: 11px; line-height: 1.55; }
 .form-field { margin: 16px 0; }
+.academic-load-select { cursor: pointer; font-weight: 700; }
+.form-field > small { display: block; color: #89918e; font-size: 10px; font-weight: 500; line-height: 1.5; margin-top: 6px; }
 .graduation-check { display: flex; align-items: flex-start; gap: 10px; margin: 14px 0; color: #74818a; font-size: 11px; line-height: 1.5; }
 .check { display: inline-grid; place-items: center; flex: 0 0 20px; width: 20px; height: 20px; border-radius: 50%; border: 1px solid #d6d5ca; color: transparent; }
 .check.done { background: #e6f1e4; color: #4f8067; border-color: #cbdcc9; }
