@@ -135,7 +135,7 @@ function RecommendationCard({
               ))}
             </fieldset>
             <small className="advisor-profile-privacy">
-              Estas respuestas describen tu experiencia personal; no modifican el pensum ni se atribuyen a un profesor.
+              Estas respuestas pertenecen a tu progreso personal y se guardan localmente en este navegador. No modifican el pensum ni se atribuyen a un profesor; la sincronización se incorporará en la etapa de datos.
             </small>
           </div>
         </details>
