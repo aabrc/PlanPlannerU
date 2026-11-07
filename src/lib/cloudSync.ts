@@ -60,6 +60,7 @@ export function hasPlannerData(state: PlannerState): boolean {
     .some(([code, done]) => done && code !== "MAT311" && code !== "ILE203");
   const hasMeta = Boolean(
     state.meta.currentPeriod ||
+    state.meta.loadPerTerm !== "15" ||
     state.meta.gpa ||
     Number(state.meta.internship) > 0
   );
