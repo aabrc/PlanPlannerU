@@ -1,5 +1,20 @@
 export type CourseStatus = "pending" | "inprogress" | "approved";
 export type CourseDifficultyOverride = "light" | "moderate" | "demanding";
+export type AdvisorReadiness = "prepared" | "some-gaps" | "needs-review";
+export type AdvisorCourseExperience = "not-started" | "manageable" | "as-expected" | "challenging";
+export type AdvisorChallengeFactor =
+  | "foundations"
+  | "teaching-method"
+  | "assessments"
+  | "practical-skills"
+  | "time-constraints";
+
+export interface AdvisorCourseProfile {
+  difficultyOverride?: CourseDifficultyOverride;
+  readiness?: AdvisorReadiness;
+  experience?: AdvisorCourseExperience;
+  challengeFactors?: AdvisorChallengeFactor[];
+}
 export interface Course {
   id?: string;
   code: string;
@@ -9,9 +24,10 @@ export interface Course {
   additional?: string[];
   gate?: { percent: number; label?: string } | null;
   lab?: string;
-  advisorProfile?: {
+  // General course facts only; never store a student's personal experience here.
+  advisorMetadata?: {
     courseType?: "language" | "elective" | "professional-elective" | "lab" | "theory" | "technical" | "mixed";
-    difficulty?: number;
+    complexity?: "introductory" | "intermediate" | "advanced";
     area?: string;
   };
   [key: string]: unknown;
@@ -75,6 +91,8 @@ export interface PlannerState {
   scheduleEvents: ScheduleEvent[];
   scheduleView: ScheduleViewRange;
   gradeAttempts: GradeAttempt[];
+  advisorCourseProfiles?: Record<string, AdvisorCourseProfile>;
+  /** @deprecated Read only for migration; preferences are now stored in advisorCourseProfiles. */
   courseDifficultyOverrides?: Record<string, CourseDifficultyOverride>;
   meta: {
     currentPeriod: string;
