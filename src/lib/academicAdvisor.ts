@@ -311,6 +311,13 @@ export function buildAcademicAdvice(
       } else {
         reasons.push("Cabe dentro de tu meta de carga actual");
       }
+      if (course.credits >= 4) {
+        reasons.push("Sus 4 o más créditos dan mayor peso a la nota en tu índice, tanto a favor como en contra");
+      } else if (course.credits >= 3) {
+        reasons.push("Su peso en el índice es intermedio; la nota obtenida determinará el efecto real");
+      } else if (course.credits > 0) {
+        reasons.push("Su peso directo en el índice es menor por tener pocos créditos");
+      }
 
       return {
         course,
