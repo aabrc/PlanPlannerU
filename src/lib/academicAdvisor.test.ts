@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildAcademicAdvice } from "./academicAdvisor";
+import { calculateGraduationProjection } from "./graduationProjection";
 import type { Course, CurriculumPlan, Period, PlannerState } from "../types";
 
 function course(code: string, req: string[] = []): Course {
@@ -23,12 +24,12 @@ function period(
   };
 }
 
-function planWith(periods: Period[], groups: CurriculumPlan["groups"] = []): CurriculumPlan {
+function planWith(periods: Period[], groups: CurriculumPlan["groups"] = [], totalCredits = 60): CurriculumPlan {
   return {
     id: "TEST-CURRICULUM",
     periods,
     groups,
-    totalCredits: 60,
+    totalCredits,
     externalRequirements: [],
     fixedCredits: 60,
     electiveMinimumCredits: 0
@@ -201,5 +202,81 @@ describe("buildAcademicAdvice: cronología del pensum", () => {
     expect(older).toBeDefined();
     expect(older?.canEnroll).toBe(false);
     expect(older?.blockers).toContain("UNKNOWN_EXTERNAL_REQ");
+  });
+});
+
+
+describe("calculateGraduationProjection", () => {
+  it("cuenta créditos aprobados de asignaturas y electivas seleccionadas", () => {
+    const elective = course("ELECTIVE_APPROVED");
+    const curriculum = planWith([
+      period("y1p1", 1, 1, [course("APPROVED_CORE")]),
+      { ...period("y1p2", 1, 2, [course("CURRENT_CORE")]), groups: ["ELECTIVE-GROUP"] },
+      period("y1p3", 1, 3, [course("FUTURE_CORE")]),
+      period("y2p1", 2, 1, [course("LATER_CORE")])
+    ], [{
+      id: "ELECTIVE-GROUP",
+      name: "Electiva",
+      minCourses: 1,
+      minCredits: 3,
+      options: [elective]
+    }], 15);
+
+    const state = stateAt("y1p2", ["APPROVED_CORE", "ELECTIVE_APPROVED"]);
+    state.selections["ELECTIVE-GROUP"] = "ELECTIVE_APPROVED";
+    state.meta.loadPerTerm = "3";
+
+    const result = calculateGraduationProjection(curriculum, state);
+
+    expect(result.status).toBe("projected");
+    expect(result.approvedCredits).toBe(6);
+    expect(result.remainingCredits).toBe(9);
+    expect(result.periodsRemaining).toBe(3);
+    expect(result.finishYear).toBe(2);
+    expect(result.finishTerm).toBe(1);
+  });
+
+  it("solicita el período actual antes de estimar la finalización", () => {
+    const curriculum = planWith([
+      period("y1p1", 1, 1, [course("COURSE_A")]),
+      period("y1p2", 1, 2, [course("COURSE_B")])
+    ], [], 6);
+
+    const result = calculateGraduationProjection(curriculum, stateAt(""));
+
+    expect(result.status).toBe("needs-period");
+    expect(result.remainingCredits).toBe(6);
+    expect(result.finishYear).toBeNull();
+  });
+
+  it("reconoce el plan completado sin exigir un período actual", () => {
+    const curriculum = planWith([
+      period("y1p1", 1, 1, [course("COURSE_A"), course("COURSE_B")])
+    ], [], 6);
+
+    const result = calculateGraduationProjection(
+      curriculum,
+      stateAt("", ["COURSE_A", "COURSE_B"])
+    );
+
+    expect(result.status).toBe("complete");
+    expect(result.remainingCredits).toBe(0);
+    expect(result.periodsRemaining).toBe(0);
+  });
+
+  it("extiende la estimación si el ritmo supera los períodos incluidos en el pensum", () => {
+    const curriculum = planWith([
+      period("y1p1", 1, 1, [course("COURSE_A")]),
+      period("y1p2", 1, 2, [course("COURSE_B")])
+    ], [], 10);
+    const state = stateAt("y1p2");
+    state.meta.loadPerTerm = "1";
+
+    const result = calculateGraduationProjection(curriculum, state);
+
+    expect(result.status).toBe("projected");
+    expect(result.exceedsPlan).toBe(true);
+    expect(result.finishYear).not.toBeNull();
+    expect(result.finishTerm).not.toBeNull();
   });
 });
