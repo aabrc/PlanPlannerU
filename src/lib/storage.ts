@@ -20,7 +20,7 @@ function normalizeScheduleView(saved?: {
     savedStart < 1440 &&
     savedStart % 30 === 0
       ? savedStart
-      : 0;
+      : 360;
   const end =
     typeof savedEnd === "number" &&
     Number.isInteger(savedEnd) &&
@@ -28,7 +28,7 @@ function normalizeScheduleView(saved?: {
     savedEnd <= 1440 &&
     savedEnd % 30 === 0
       ? savedEnd
-      : 1440;
+      : 1200;
   const lastVisibleDay =
     typeof savedLastDay === "number" &&
     Number.isInteger(savedLastDay) &&
@@ -37,7 +37,7 @@ function normalizeScheduleView(saved?: {
       ? savedLastDay
       : 6;
 
-  if (end <= start) return { start: 0, end: 1440, lastVisibleDay };
+  if (end <= start) return { start: 360, end: 1200, lastVisibleDay };
   return { start, end, lastVisibleDay };
 }
 
@@ -50,7 +50,7 @@ function blankState(externalCodes: string[]): PlannerState {
     selections: {},
     externalDone,
     scheduleEvents: [],
-    scheduleView: { start: 0, end: 1440, lastVisibleDay: 6 },
+    scheduleView: { start: 360, end: 1200, lastVisibleDay: 6 },
     gradeAttempts: [],
     meta: { currentPeriod: "", loadPerTerm: "15", gpa: "", internship: 0 }
   };
