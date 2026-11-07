@@ -13,7 +13,9 @@ export type SyncConflictReason = "first-login" | "version-mismatch" | "concurren
 
 export type PlannerSyncResult =
   | { status: "idle" }
-  | { status: "uploaded" | "downloaded" | "synced"; state: PlannerState; revision: number; updatedAt: string }
+  | { status: "uploaded"; state: PlannerState; revision: number; updatedAt: string }
+  | { status: "downloaded"; state: PlannerState; revision: number; updatedAt: string }
+  | { status: "synced"; state: PlannerState; revision: number; updatedAt: string }
   | {
       status: "conflict";
       reason: SyncConflictReason;
